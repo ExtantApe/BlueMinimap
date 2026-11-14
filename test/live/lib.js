@@ -1,8 +1,8 @@
-// Live test kit for BlueMinimap: server control, a protocol bot, a frame decoder, and an independent
+// Live test kit for BlueMapMini: server control, a protocol bot, a frame decoder, and an independent
 // reading of BlueMap's tiles to compare frames against. See README.md in this folder.
 const path = require('path'), fs = require('fs'), zlib = require('zlib'), cp = require('child_process'), crypto = require('crypto');
 /** Holds the server jars, plugins and throwaway servers. Never committed. */
-const ROOT = path.resolve(process.env.BMH_LIVE_DIR || path.join(__dirname, 'work'));
+const ROOT = path.resolve(process.env.BMM_LIVE_DIR || path.join(__dirname, 'work'));
 /** The repository this kit lives in. */
 const REPO = path.resolve(__dirname, '..', '..');
 const mineflayer = require('mineflayer');
@@ -81,10 +81,10 @@ class Server {
     await sleep(500);
   }
   errors(from = 0) {
-    return this.log.slice(from).split('\n').filter((l) => /\bERROR\b|Exception|\bat com\.extantape|BlueMinimap.*WARN|WARN.*BlueMinimap/.test(l) && !/Advanced terminal/.test(l));
+    return this.log.slice(from).split('\n').filter((l) => /\bERROR\b|Exception|\bat com\.extantape|BlueMapMini.*WARN|WARN.*BlueMapMini/.test(l) && !/Advanced terminal/.test(l));
   }
   path(...p) { return path.join(this.dir, ...p); }
-  setConfig(edits) { editYaml(this.path('plugins/BlueMinimap/config.yml'), edits); }
+  setConfig(edits) { editYaml(this.path('plugins/BlueMapMini/config.yml'), edits); }
 }
 
 /** Sets scalar values by dotted path, keeping everything else in the file. */
@@ -146,7 +146,7 @@ class Pack {
     this.files = unzipAll(tmp); fs.unlinkSync(tmp);
     this.fonts = {};
     for (const [name, data] of Object.entries(this.files)) {
-      const m = name.match(/^assets\/blueminimap\/font\/(\w+)\.json$/);
+      const m = name.match(/^assets\/bluemapmini\/font\/(\w+)\.json$/);
       if (m) this.fonts[m[1]] = this.loadFont(JSON.parse(data.toString('utf8')));
     }
   }
@@ -155,7 +155,7 @@ class Pack {
     for (const p of font.providers) {
       if (p.type === 'space') { for (const [k, v] of Object.entries(p.advances)) map.set(k.codePointAt(0), { kind: 'space', advance: v }); continue; }
       if (p.ascent > p.height) throw new Error(`ascent ${p.ascent} > height ${p.height}`);
-      const file = 'assets/blueminimap/textures/' + p.file.split(':')[1];
+      const file = 'assets/bluemapmini/textures/' + p.file.split(':')[1];
       const sheet = sheets[file] || (sheets[file] = readPng(this.files[file]));
       const rows = p.chars.map((s) => [...s]), cols = rows[0].length;
       const cw = sheet.w / cols, ch = sheet.h / rows.length, scale = p.height / ch;
@@ -312,7 +312,7 @@ class Bot {
     if (this.downloadStatus === 200) {
       const res = await fetch(p.url), buf = Buffer.from(await res.arrayBuffer());
       this.packSha = crypto.createHash('sha1').update(buf).digest('hex');
-      if (p.url.includes('blueminimap')) { this.packUrl = p.url; this.packBytes = buf; }
+      if (p.url.includes('bluemapmini')) { this.packUrl = p.url; this.packBytes = buf; }
     }
     const send = (result) => this.bot._client.write('resource_pack_receive', { uuid: p.uuid, result });
     if (this.mode === 'ignore') return;

@@ -17,7 +17,7 @@ import java.util.zip.*;
 
 /**
  * Feeds a resource pack through the game's own metadata and font loading code, without starting the game,
- * and writes each glyph's advance as JSON. Run by the live suite when BMH_CLIENT_CP is set:
+ * and writes each glyph's advance as JSON. Run by the live suite when BMM_CLIENT_CP is set:
  * {@code java -cp <client jar and libraries> FontCheck.java <pack.zip> <out.json>}
  */
 public class FontCheck {
@@ -45,7 +45,7 @@ public class FontCheck {
         StringBuilder out = new StringBuilder("{");
         boolean firstFont = true;
         for (String path : new TreeSet<>(files.keySet())) {
-            if (!path.startsWith("assets/blueminimap/font/")) continue;
+            if (!path.startsWith("assets/bluemapmini/font/")) continue;
             String name = path.substring(path.lastIndexOf('/') + 1, path.length() - 5);
             JsonArray providers = JsonParser.parseString(new String(files.get(path), StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonArray("providers");
             int glyphs = 0;

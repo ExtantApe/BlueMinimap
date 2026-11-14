@@ -1,4 +1,4 @@
-rootProject.name = "BlueMinimap"
+rootProject.name = "BlueMapMini"
 
 // Test-only plugins for the live tests in test/live. They're never shipped.
 include("live-test-helper", "live-test-conflict")

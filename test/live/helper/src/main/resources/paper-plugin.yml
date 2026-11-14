@@ -1,6 +1,6 @@
 name: LiveTestHelper
 version: '1'
-main: com.extantape.blueminimap.livetest.Helper
+main: com.extantape.bluemapmini.livetest.Helper
 api-version: '26.1'
 description: Test only. Lets the live tests act like other plugins. Never install it on a real server.
 dependencies:
@@ -10,7 +10,7 @@ dependencies:
       required: true
       join-classpath: true
     # For the share tests: listens to CoordinateShareEvent the way a server's chat rules plugin would.
-    BlueMinimap:
+    BlueMapMini:
       load: BEFORE
       required: true
       join-classpath: true

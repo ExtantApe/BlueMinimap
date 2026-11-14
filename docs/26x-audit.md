@@ -1,6 +1,6 @@
 # 26.x audit
 
-BlueMinimap is a Paper plugin for Paper 26.1 and newer only: `paper-plugin.yml`, `api-version: '26.1'`, Java 25, and the Paper 26.1.2 API at compile time. This note records what changed when 1.21.11 support was dropped and which newer Paper features were checked. Checked against docs.papermc.io on 2026-11-07.
+BlueMapMini is a Paper plugin for Paper 26.1 and newer only: `paper-plugin.yml`, `api-version: '26.1'`, Java 25, and the Paper 26.1.2 API at compile time. This note records what changed when 1.21.11 support was dropped and which newer Paper features were checked. Checked against docs.papermc.io on 2026-11-07.
 
 ## What changed
 
@@ -16,7 +16,7 @@ BlueMinimap is a Paper plugin for Paper 26.1 and newer only: `paper-plugin.yml`,
 
 Paper has no 26.1.0 build. Its 26.1 line is 26.1.1 (alpha builds only) and 26.1.2 (stable), so "26.1" in practice means 26.1.2. BlueMap 5.29 itself declares `api-version: 26.1.1`.
 
-**`paper-plugin.yml`.** Paper still marks Paper plugins experimental, and its docs don't say whether one can use a `plugin.yml` plugin's classes. BlueMap is one, so this was tested rather than assumed. BlueMap is declared as a required server dependency that loads first with `join-classpath: true`. Floodgate is declared the same way but optional, because the plugin finds it by reflection. There is no `commands` section: the commands were already Brigadier, registered through `LifecycleEvents.COMMANDS`. Paper plugins get their own classloader, so other plugins can't reach BlueMinimap's classes. None need to.
+**`paper-plugin.yml`.** Paper still marks Paper plugins experimental, and its docs don't say whether one can use a `plugin.yml` plugin's classes. BlueMap is one, so this was tested rather than assumed. BlueMap is declared as a required server dependency that loads first with `join-classpath: true`. Floodgate is declared the same way but optional, because the plugin finds it by reflection. There is no `commands` section: the commands were already Brigadier, registered through `LifecycleEvents.COMMANDS`. Paper plugins get their own classloader, so other plugins can't reach BlueMapMini's classes. None need to.
 
 **Java 25** found one real compile error: a cache record named `Entry` clashed with `LinkedHashMap.Entry` inside an anonymous subclass. It's renamed to `CachedTile`.
 
@@ -46,10 +46,10 @@ All on 2026-11-07, with BlueMap 5.29. The 31 unit tests pass on Java 25. The tes
 | Load, 20 players for a minute | 9/9 | 9/9 | 9/9 |
 | `public-url` and the hosted-pack check | | | 36/36 |
 | BlueMap on SQLite through the HTTP source | | | 1024/1024 cells |
-| BlueMap starting next to BlueMinimap | | | 8/8 starts |
+| BlueMap starting next to BlueMapMini | | | 8/8 starts |
 
-The live suite covers BlueMap's classes being reachable from the Paper plugin (tiles, markers, hidden players), commands and their back-off, `/blueminimap reload`, `/bluemap reload` and a full `/reload`.
+The live suite covers BlueMap's classes being reachable from the Paper plugin (tiles, markers, hidden players), commands and their back-off, `/bluemapmini reload`, `/bluemap reload` and a full `/reload`.
 
 **Mocked or not tested:** the client is a protocol bot speaking 1.21.11 through ViaBackwards, not a real 26.x client. Magic's pack call is simulated with the same Bukkit method. Floodgate was not installed, so the optional `join-classpath` for it is untested. Paper 26.1.1, which only had alpha builds, was not tested.
 
-**Found along the way:** `/blueminimap debug dump` could finish after the plugin was disabled and then try to schedule its reply, which threw an error. It now checks first, as frame building already did.
+**Found along the way:** `/bluemapmini debug dump` could finish after the plugin was disabled and then try to schedule its reply, which threw an error. It now checks first, as frame building already did.

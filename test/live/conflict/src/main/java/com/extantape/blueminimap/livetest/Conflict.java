@@ -1,4 +1,4 @@
-package com.extantape.blueminimap.livetest;
+package com.extantape.bluemapmini.livetest;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

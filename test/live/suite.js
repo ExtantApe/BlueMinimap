@@ -1,4 +1,4 @@
-// The BlueMinimap live test suite. Usage: node suite.js <label> <dir> <jar> <port> <packPort> <webPort> <netherMap> [groups]
+// The BlueMapMini live test suite. Usage: node suite.js <label> <dir> <jar> <port> <packPort> <webPort> <netherMap> [groups]
 // <dir> and <jar> are relative to the work folder. See README.md in this folder.
 const K = require('./lib.js');
 const { REPO, skip, Server, Bot, Pack, Truth, decodeFrame, gridOf, iconCell, textLines, check, section, summary, sleep, until, editYaml, readPng, ROOT } = K;
@@ -9,7 +9,7 @@ const only = groupArg ? groupArg.split(',') : null;
 const ICON = { PLAYER: 16, POI: 17, DEATH: 18, NORTH: 19 };
 const OVER = 'world';
 const s = new Server(dir, jar, port);
-const CFG = s.path('plugins/BlueMinimap/config.yml');
+const CFG = s.path('plugins/BlueMapMini/config.yml');
 const truth = new Truth(s.path('bluemap/web/maps'));
 const packs = new Map();
 let botN = 0;
@@ -18,10 +18,11 @@ const liveBots = []; // Quit after each group, so a crash can't leave a duplicat
 /** The shipped config with this server's ports. The clock is off unless a group turns it on, so idle tests stay idle. */
 function baseConfig(edits = {}) {
   fs.copyFileSync(path.join(REPO, 'src/main/resources/config.yml'), CFG);
-  editYaml(CFG, { 'pack.port': packPort, 'pack.bind': '127.0.0.1', 'tiles.http-url': `http://127.0.0.1:${webPort}`, 'hud.clock.enabled': false, ...edits });
+  // These servers have no Mayor, so sharing is turned on without it; the check below covers the default.
+  editYaml(CFG, { 'pack.port': packPort, 'pack.bind': '127.0.0.1', 'tiles.http-url': `http://127.0.0.1:${webPort}`, 'hud.clock.enabled': false, 'share.require-mayor': false, ...edits });
 }
 async function reload(expectPush) {
-  const m = s.mark(); s.cmd('blueminimap reload');
+  const m = s.mark(); s.cmd('bluemapmini reload');
   await s.waitLog(/reloaded/, 8000, m); await sleep(300);
 }
 /**
@@ -29,7 +30,7 @@ async function reload(expectPush) {
  * glyph advances, or null when no client classpath is set. The client isn't started, only its classes.
  */
 function gameAdvances(packBytes) {
-  const classpath = process.env.BMH_CLIENT_CP;
+  const classpath = process.env.BMM_CLIENT_CP;
   if (!classpath) return null;
   const zip = path.join(ROOT, `fontcheck-${label}.zip`), out = path.join(ROOT, `fontcheck-${label}.json`);
   fs.writeFileSync(zip, packBytes);
@@ -134,7 +135,7 @@ const GROUPS = {
     r = await until(() => { const x = readoutOf(b); return x && x.frame.runs.length > 0 && x.line.endsWith('12:05') && x; }, 4000);
     check('The minimap shows the clock too', r && r.clocks.length === 1, r?.line);
     await chat(b, '/map');
-    r = await until(() => { const x = readoutOf(b); return x && x.frame.fontName === 'blueminimap:full' && x; }, 4000);
+    r = await until(() => { const x = readoutOf(b); return x && x.frame.fontName === 'bluemapmini:full' && x; }, 4000);
     check('So does the fullscreen map', r && r.clocks.length === 1 && textLines(r.frame).some((l) => l.s.endsWith('12:05')), r && textLines(r.frame).map((l) => l.s).join(' | '));
     check('No missing glyphs anywhere', r && r.frame.missing === 0 && r.frame.net === 0, r && `${r.frame.missing} missing`);
     await chat(b, '/map');
@@ -182,24 +183,14 @@ const GROUPS = {
     check('Naming them says it can\'t reach them', /Nobody you picked/.test(off || ''), off);
     await chat(alex, '/hud show shares', /You'll receive/);
 
-    s.cmd('bmt perm Blair blueminimap.share.receive false'); await sleep(300);
+    s.cmd('bmt perm Blair bluemapmini.share.receive false'); await sleep(300);
     m = marks(); await chat(t, '/hud share everyone', /Sent your coordinates/); await sleep(500);
-    check('Without blueminimap.share.receive nothing arrives', !got(m).includes('Blair') && got(m).includes('Alex'), got(m).join(','));
-    s.cmd('bmt perm Blair blueminimap.share.receive true');
-    s.cmd('bmt perm Tester blueminimap.share.send false'); await sleep(300);
+    check('Without bluemapmini.share.receive nothing arrives', !got(m).includes('Blair') && got(m).includes('Alex'), got(m).join(','));
+    s.cmd('bmt perm Blair bluemapmini.share.receive true');
+    s.cmd('bmt perm Tester bluemapmini.share.send false'); await sleep(300);
     const denied = await chat(t, '/hud share Alex', /can't share|Sent|Unknown/);
-    check('Without blueminimap.share.send the sender is told no', /can't share your coordinates/.test(denied || ''), denied);
-    s.cmd('bmt perm Tester blueminimap.share.send true');
-    // A server that turned sharing off under the old name (say, for a children's group) must stay off after the rename.
-    s.cmd('bmt perm Blair bluemaphud.share.receive false'); await sleep(300);
-    m = marks(); log = s.mark(); await chat(t, '/hud share everyone', /Sent your coordinates/); await sleep(500);
-    check('An old bluemaphud.share.receive false still stops shares arriving', !got(m).includes('Blair') && got(m).includes('Alex'), got(m).join(','));
-    check('and the log says to set the new name', /Blair has blueminimap\.share\.receive true but the old bluemaphud\.share\.receive false, so it's false/.test(s.since(log)));
-    s.cmd('bmt perm Blair bluemaphud.share.receive true');
-    s.cmd('bmt perm Tester bluemaphud.share.send false'); await sleep(300);
-    const oldDenied = await chat(t, '/hud share Alex', /can't share|Sent|Unknown/);
-    check('An old bluemaphud.share.send false still stops the sender', /can't share your coordinates/.test(oldDenied || ''), oldDenied);
-    s.cmd('bmt perm Tester bluemaphud.share.send true'); await sleep(300);
+    check('Without bluemapmini.share.send the sender is told no', /can't share your coordinates/.test(denied || ''), denied);
+    s.cmd('bmt perm Tester bluemapmini.share.send true');
     s.cmd('bmt hidefrom Tester Alex on'); await sleep(300);
     const hidden = await chat(t, '/hud share Alex', /Nobody called|Sent/);
     check('A player hidden from the sender can\'t be named', /Nobody called Alex is online/.test(hidden || ''), hidden);
@@ -235,6 +226,9 @@ const GROUPS = {
     baseConfig({ 'share.cooldown-seconds': 0, 'share.enabled': false }); await reload();
     const disabled = await chat(t, '/hud share Alex', /turned off|Sent/);
     check('share.enabled: false turns it off', /turned off on this server/.test(disabled || ''), disabled);
+    baseConfig({ 'share.cooldown-seconds': 0, 'share.require-mayor': true }); await reload();
+    const noMayor = await chat(t, '/hud share Alex', /off on this server|Sent/);
+    check('By default, with no Mayor installed, sharing stays off (fail closed)', /off on this server for now/.test(noMayor || ''), noMayor);
 
     baseConfig({ 'share.cooldown-seconds': 0 }); await reload();
     const dialogs = [];
@@ -318,7 +312,7 @@ const GROUPS = {
     baseConfig({ 'hud.clock.enabled': true, 'hud.theme': 'sparkles' }); await reload();
     check('An unknown default theme is reported and falls back to classic', /no theme called sparkles, so the default is classic/.test(s.since(m2)), s.since(m2).split('\n').find((l) => /theme/i.test(l))?.slice(0, 160));
 
-    const folder = s.path('plugins/BlueMinimap/themes');
+    const folder = s.path('plugins/BlueMapMini/themes');
     fs.mkdirSync(folder, { recursive: true });
     const custom = JSON.parse(fs.readFileSync(path.join(REPO, 'src/main/resources/themes/classic.json'), 'utf8'));
     custom.name = 'Ocean'; custom.colors.plate = '#001A33';
@@ -326,7 +320,7 @@ const GROUPS = {
     fs.writeFileSync(path.join(folder, 'broken.json'), '{ nope');
     const m3 = s.mark();
     baseConfig({ 'hud.clock.enabled': true }); await reload();
-    check('A server theme in plugins/BlueMinimap/themes is added', /Themes: classic, desert, galaxy, high-contrast, ocean\./.test(s.since(m3)), s.since(m3).split('\n').find((l) => /Themes:/.test(l))?.slice(0, 160));
+    check('A server theme in plugins/BlueMapMini/themes is added', /Themes: classic, desert, galaxy, high-contrast, ocean\./.test(s.since(m3)), s.since(m3).split('\n').find((l) => /Themes:/.test(l))?.slice(0, 160));
     check('A broken one is reported and skipped', /Theme broken couldn't be loaded/.test(s.since(m3)));
     check('A hard-to-read one is reported, and still loads', /Theme ocean is hard to read in places: facing #BEC6D2/.test(s.since(m3)));
     const o = await join('Tester');
@@ -357,22 +351,22 @@ const GROUPS = {
     check('Coordinates-only draws just the line, in that same bar', co && b.bars.size === 1 && b.maxBars === 1, co ? textLines(co)[0].s : 'no coordinates-only frame');
     for (const c of ['/hud off', '/hud on', '/hud offset 10 8', '/hud offset 0 0', '/hud hide coords', '/hud size large', '/hud zoom 4', '/hud mode map', '/hud mode coords']) { await chat(b, c); await sleep(450); }
     await until(() => b.bars.size === 1, 3000); one('Every option in coordinates-only mode keeps it to one');
-    await chat(b, '/map'); await until(() => b.hudFrame(pk())?.fontName === 'blueminimap:full', 3000); one('Fullscreen from coordinates-only uses the same bar');
+    await chat(b, '/map'); await until(() => b.hudFrame(pk())?.fontName === 'bluemapmini:full', 3000); one('Fullscreen from coordinates-only uses the same bar');
     await chat(b, '/map');
-    check('Closing it goes back to coordinates only', await until(() => { const fr = b.hudFrame(pk()); return fr && fr.fontName === 'blueminimap:hud' && fr.runs.length === 0 && fr.text.length > 0; }, 3000));
+    check('Closing it goes back to coordinates only', await until(() => { const fr = b.hudFrame(pk()); return fr && fr.fontName === 'bluemapmini:hud' && fr.runs.length === 0 && fr.text.length > 0; }, 3000));
     b.sneak(true); await sleep(150); b.swapF(); await sleep(700); b.swapF(); await sleep(700); b.sneak(false); one('Sneak + F from coordinates-only uses the same bar');
     s.cmd('gamemode spectator Tester'); await sleep(1500); s.cmd('gamemode creative Tester'); await sleep(1500); one('Auto-hide and return in coordinates-only keeps it to one');
     await chat(b, '/hud mode map'); await chat(b, '/hud size medium'); await chat(b, '/hud zoom 2');
     await until(() => b.hudFrame(pk())?.runs.length > 0, 3000); one('Switching back to the map keeps it to one');
-    await chat(b, '/map'); await until(() => b.hudFrame(pk())?.fontName === 'blueminimap:full', 3000); one('Fullscreen uses the same bar');
-    await chat(b, '/map'); await until(() => b.hudFrame(pk())?.fontName === 'blueminimap:hud', 3000);
+    await chat(b, '/map'); await until(() => b.hudFrame(pk())?.fontName === 'bluemapmini:full', 3000); one('Fullscreen uses the same bar');
+    await chat(b, '/map'); await until(() => b.hudFrame(pk())?.fontName === 'bluemapmini:hud', 3000);
     b.sneak(true); await sleep(150); b.swapF(); await sleep(700); b.swapF(); await sleep(700); b.sneak(false); one('Sneak + F uses the same bar');
     // Paper makes a new bar ID after every viewer has gone, as with /hud off, so IDs alone prove nothing.
     // What matters is that a new one is never added while another is showing.
     let showing = 0, overlap = 0;
     for (const e of b.barEvents) { if (e.action === 0) { showing++; if (showing > 1) overlap++; } if (e.action === 1) showing--; }
     check('No bar is ever added while another is showing', overlap === 0, `${b.barEvents.filter((e) => e.action === 0).length} adds, ${overlap} overlaps`);
-    await reload(); await sleep(800); one('/blueminimap reload keeps it to one');
+    await reload(); await sleep(800); one('/bluemapmini reload keeps it to one');
     baseConfig({ 'pack.boss-bar-color': 'blue' }); await reload(); await until(() => b.packSha === b.pushes.at(-1).hash, 4000); await sleep(1200); one('A pack-changing reload keeps it to one');
     baseConfig(); await reload(); await until(() => b.packSha === b.pushes.at(-1).hash, 4000); await sleep(1200);
     s.cmd('bluemap reload'); await sleep(9000); one('/bluemap reload keeps it to one');
@@ -440,7 +434,7 @@ const GROUPS = {
       check('It still shows where BlueMap has no map', await until(() => lineOf()?.startsWith('0 100 0 '), 6000), lineOf());
       await chat(b, '/map', /no map/);
       await sleep(800);
-      check('/map there explains and leaves the coordinates up', !!lineOf() && b.hudFrame(pk()).fontName === 'blueminimap:hud', lineOf());
+      check('/map there explains and leaves the coordinates up', !!lineOf() && b.hudFrame(pk()).fontName === 'bluemapmini:hud', lineOf());
       await chat(b, '/map');
       const noMap = await chat(b, '/hud mode map', /no map/);
       check('/hud mode map there explains why nothing shows', noMap && await until(() => !b.hudFrame(pk()), 3000), noMap);
@@ -463,7 +457,7 @@ const GROUPS = {
     check('No boss bar is shown in that mode', b.bars.size === 0, b.bars.size);
     const abTop = Math.max(...lastAb().text.map((t) => t.top));
     check('It sits above the text line, clear of the hotbar', abTop < -8, abTop);
-    await chat(b, '/map'); await until(() => b.hudFrame(pk())?.fontName === 'blueminimap:full', 3000);
+    await chat(b, '/map'); await until(() => b.hudFrame(pk())?.fontName === 'bluemapmini:full', 3000);
     check('Fullscreen still uses one boss bar', b.bars.size === 1);
     await chat(b, '/map'); await until(() => b.bars.size === 0, 3000);
     check('Closing it returns to the action bar with no bar left', b.bars.size === 0 && b.barEvents.slice(adds).filter((e) => e.action === 0).length === 1);
@@ -482,7 +476,7 @@ const GROUPS = {
     await fresh.cleanQuit();
     baseConfig(); await reload();
     // The dragon's own bar is expected while auto-hide is off; what must never happen is a second bar of ours.
-    const ours = new Set(b.frames.filter((f) => JSON.stringify(f.title).includes('blueminimap')).map((f) => f.id));
+    const ours = new Set(b.frames.filter((f) => JSON.stringify(f.title).includes('bluemapmini')).map((f) => f.id));
     let shown = 0, over = 0, most = 0;
     for (const e of b.barEvents) { if (!ours.has(e.id)) continue; if (e.action === 0) { shown++; most = Math.max(most, shown); if (shown > 1) over++; } if (e.action === 1) shown--; }
     check('Never a second bar of ours at any point in this group', over === 0 && most <= 1, `${over} overlaps, most ${most}, ${ours.size} bar IDs used`);
@@ -507,7 +501,7 @@ const GROUPS = {
     else check("pack.bind 127.0.0.1: refused on this machine's network address", !(await reach(lan)), lan);
     const pk = packOf(b);
     const adv = gameAdvances(b.packBytes);
-    if (!adv) skip("This test's advances match the game's own font code", 'set BMH_CLIENT_CP to a Minecraft client classpath to run it');
+    if (!adv) skip("This test's advances match the game's own font code", 'set BMM_CLIENT_CP to a Minecraft client classpath to run it');
     else {
       let wrong = 0, n = 0;
       for (const [font, table] of Object.entries(adv)) for (const [c, a] of Object.entries(table)) { n++; if (pk.fonts[font].get(+c)?.advance !== a) wrong++; }
@@ -517,7 +511,7 @@ const GROUPS = {
     const add = b.barEvents.find((e) => e.action === 0);
     check('Boss bar is pink with zero progress', add && add.color === 0 && add.health === 0, JSON.stringify(add));
     const f = b.hudFrame(pk);
-    check('Frame uses our font with shadow off', f && f.fontName === 'blueminimap:hud' && f.shadow === 0, f && f.fontName + ' shadow ' + f.shadow);
+    check('Frame uses our font with shadow off', f && f.fontName === 'bluemapmini:hud' && f.shadow === 0, f && f.fontName + ' shadow ' + f.shadow);
     check('Frame has no missing glyphs and nets to zero', f && f.missing === 0 && f.net === 0, f && `missing ${f.missing}, net ${f.net}`);
     await b.cleanQuit();
   },
@@ -548,7 +542,7 @@ const GROUPS = {
     await chat(b, '/map');
     await expectMap('Fullscreen matches tiles, darkened', b, OVER, 4, -7, -7, 96, 54, 3, 0.75);
     const full = b.hudFrame(packOf(b));
-    check('Fullscreen uses its own font', full?.fontName === 'blueminimap:full', full?.fontName);
+    check('Fullscreen uses its own font', full?.fontName === 'bluemapmini:full', full?.fontName);
     await chat(b, '/map'); await sleep(600);
     await b.cleanQuit();
   },
@@ -611,7 +605,7 @@ const GROUPS = {
     const nn = b.frames.length; await tp('Tester', 8, 100, -9, 135); await sleep(1200);
     check('With coordinates hidden, moving vertically sends nothing', b.frames.length === nn, b.frames.length - nn);
     await chat(b, '/map');
-    const fullLine = await until(() => { const fr = b.hudFrame(pk); return fr.fontName === 'blueminimap:full' && textLines(fr).find((l) => l.s.startsWith('8 100 -9 ')); }, 4000);
+    const fullLine = await until(() => { const fr = b.hudFrame(pk); return fr.fontName === 'bluemapmini:full' && textLines(fr).find((l) => l.s.startsWith('8 100 -9 ')); }, 4000);
     check('Fullscreen shows X, Y, Z and facing even with them hidden on the minimap', fullLine, fullLine?.s);
     const fr = b.hudFrame(pk), gf = gridOf(fr, 3);
     const legend = textLines(fr).map((l) => l.s).join(' | ');
@@ -644,7 +638,7 @@ const GROUPS = {
     await step('Invisibility', () => s.cmd('effect give Other invisibility 600 0 true'), () => s.cmd('effect clear Other'));
     await step('Hidden in BlueMap', () => s.cmd('bmt bmhide Other on'), () => s.cmd('bmt bmhide Other off'));
     await step('/hud hide players', () => chat(b, '/hud hide players'), () => chat(b, '/hud show players'));
-    await step('Losing blueminimap.seeplayers', () => s.cmd('bmt perm Tester blueminimap.seeplayers false'), () => s.cmd('bmt perm Tester blueminimap.seeplayers true'));
+    await step('Losing bluemapmini.seeplayers', () => s.cmd('bmt perm Tester bluemapmini.seeplayers false'), () => s.cmd('bmt perm Tester bluemapmini.seeplayers true'));
     await step('Moving past the radius', () => tp('Other', 500, 120, 0), () => tp('Other', 20, 120, 10));
     s.cmd('execute in minecraft:the_nether run tp Other 20 120 10');
     check('A player in another dimension is not shown', await seen(false));
@@ -671,7 +665,7 @@ const GROUPS = {
     check('It sits in the right cell', cell && cell.x === 21 && cell.z === 6, cell && JSON.stringify(cell));
     check('No label on the minimap', !textLines(b.hudFrame(pk)).some((l) => l.s.includes('BASE')));
     await chat(b, '/map zoom 2', /zoom/); await chat(b, '/map');
-    const lab = await until(() => { const f = b.hudFrame(pk); return f.fontName === 'blueminimap:full' && textLines(f).find((l) => l.s.includes('MY BASE')); }, 4000);
+    const lab = await until(() => { const f = b.hudFrame(pk); return f.fontName === 'bluemapmini:full' && textLines(f).find((l) => l.s.includes('MY BASE')); }, 4000);
     check('Fullscreen shows the label', lab, lab && lab.s);
     await s.run(`bmt poi world testset p2 12 70 -22 Café «x» 日本 & <b>`, /poi added/); await sleep(5500);
     const f2 = b.hudFrame(pk);
@@ -730,14 +724,14 @@ const GROUPS = {
     await chat(b, '/hud off', /off/);
     check('/hud off hides it', await gone());
     await chat(b, '/map');
-    const fullOk = await until(() => b.hudFrame(pk)?.fontName === 'blueminimap:full', 3000);
+    const fullOk = await until(() => b.hudFrame(pk)?.fontName === 'bluemapmini:full', 3000);
     check('/map still works while the minimap is off', fullOk);
     await chat(b, '/map'); check('Closing fullscreen leaves the minimap off', await gone());
     await chat(b, '/hud on', /on/); await back();
-    await chat(b, '/map'); await until(() => b.hudFrame(pk)?.fontName === 'blueminimap:full', 3000);
+    await chat(b, '/map'); await until(() => b.hudFrame(pk)?.fontName === 'bluemapmini:full', 3000);
     const bars = b.bars.size;
     check('Fullscreen reuses one bar', bars === 1, bars);
-    await chat(b, '/map'); await until(() => b.hudFrame(pk)?.fontName === 'blueminimap:hud', 3000);
+    await chat(b, '/map'); await until(() => b.hudFrame(pk)?.fontName === 'bluemapmini:hud', 3000);
 
     baseConfig({ 'hud.auto-hide.spectator': false, 'hud.auto-hide.other-boss-bar': false }); await reload(); await sleep(800);
     s.cmd('gamemode spectator Tester'); await sleep(1500);
@@ -747,18 +741,18 @@ const GROUPS = {
     s.cmd('bmt advbar Tester off');
 
     baseConfig({ 'fullscreen.timeout-seconds': 2 }); await reload(); await sleep(500);
-    await chat(b, '/map'); await until(() => b.hudFrame(pk)?.fontName === 'blueminimap:full', 3000);
-    check('Fullscreen closes itself at the timeout', await until(() => b.hudFrame(pk)?.fontName === 'blueminimap:hud', 5000));
+    await chat(b, '/map'); await until(() => b.hudFrame(pk)?.fontName === 'bluemapmini:full', 3000);
+    check('Fullscreen closes itself at the timeout', await until(() => b.hudFrame(pk)?.fontName === 'bluemapmini:hud', 5000));
 
     baseConfig(); await reload(); await sleep(500);
     b.sneak(true); await sleep(200); b.swapF(); await sleep(200);
-    check('Sneak + F opens fullscreen', await until(() => b.hudFrame(pk)?.fontName === 'blueminimap:full', 3000));
-    b.swapF(); check('Sneak + F closes it', await until(() => b.hudFrame(pk)?.fontName === 'blueminimap:hud', 3000));
+    check('Sneak + F opens fullscreen', await until(() => b.hudFrame(pk)?.fontName === 'bluemapmini:full', 3000));
+    b.swapF(); check('Sneak + F closes it', await until(() => b.hudFrame(pk)?.fontName === 'bluemapmini:hud', 3000));
     b.sneak(false); await sleep(200); const n = b.frames.length; b.swapF(); await sleep(1200);
-    check('F without sneaking does nothing to the map', b.hudFrame(pk)?.fontName === 'blueminimap:hud' && b.frames.length === n);
+    check('F without sneaking does nothing to the map', b.hudFrame(pk)?.fontName === 'bluemapmini:hud' && b.frames.length === n);
     baseConfig({ 'fullscreen.sneak-swap-toggle': false }); await reload(); await sleep(400);
     b.sneak(true); await sleep(200); b.swapF(); await sleep(1200);
-    check('sneak-swap-toggle false leaves sneak + F alone', b.hudFrame(pk)?.fontName === 'blueminimap:hud'); b.sneak(false);
+    check('sneak-swap-toggle false leaves sneak + F alone', b.hudFrame(pk)?.fontName === 'bluemapmini:hud'); b.sneak(false);
     baseConfig({ 'hud.auto-hide.quick-hide-gesture': true }); await reload(); await sleep(400);
     await tp('Tester', 0, 120, 0, 180, 90); await sleep(300);
     b.sneak(true); await sleep(200); b.swapF();
@@ -809,7 +803,7 @@ const GROUPS = {
     await tp('Tester', 0, 120, 0);
     let pushes = b.pushes.length;
     await reload(); await sleep(1500);
-    check('/blueminimap reload with no pack change re-sends nothing', b.pushes.length === pushes, b.pushes.length - pushes);
+    check('/bluemapmini reload with no pack change re-sends nothing', b.pushes.length === pushes, b.pushes.length - pushes);
     check('The map keeps working after it', !!b.hudFrame(packOf(b)));
     baseConfig({ 'hud.cell-pixels': 3 }); await reload();
     check('A pack-changing reload re-sends with the same ID', await until(() => b.pushes.length === pushes + 1, 4000) && b.pushes.at(-1).uuid === b.pushes[0].uuid, b.pushes.length - pushes);
@@ -846,8 +840,8 @@ const GROUPS = {
     const rm = s.mark(); s.cmd('reload confirm'); await s.waitLog(/Reload complete|Reloaded|complete/i, 60000, rm); await sleep(6000);
     const back = await until(() => b.pushes.length >= 1 && b.hudFrame(packOf(b)), 8000);
     check('Survives a full /reload', back);
-    const errs = s.errors(rm).filter((l) => /extantape|BlueMinimap/.test(l));
-    check('No BlueMinimap errors from /reload', errs.length === 0, errs[0]?.slice(0, 200) || '');
+    const errs = s.errors(rm).filter((l) => /extantape|BlueMapMini/.test(l));
+    check('No BlueMapMini errors from /reload', errs.length === 0, errs[0]?.slice(0, 200) || '');
     await b.cleanQuit();
     await s.stop(); await s.start();
   },
@@ -862,12 +856,12 @@ const GROUPS = {
     await until(() => b.pops.length >= 1, 3000);
     check('The old one-pack method pops every pack', b.pops.length >= 1, JSON.stringify(b.pops[0]));
     check('The map hides right away', await until(() => !b.hudFrame(packOf(b)), 3000));
-    check('Our pack is re-sent', await until(() => b.pushes.filter((p) => p.url.includes('blueminimap')).length >= pushes + 1, 6000), b.pushes.map((p) => p.url.split('/').pop()).join(','));
+    check('Our pack is re-sent', await until(() => b.pushes.filter((p) => p.url.includes('bluemapmini')).length >= pushes + 1, 6000), b.pushes.map((p) => p.url.split('/').pop()).join(','));
     check('The map returns', await until(() => b.hudFrame(packOf(b)), 5000));
     const n = b.pushes.length;
     s.cmd(`bmt magicpack Tester http://127.0.0.1:${packPort}/nope2.zip`);
     await sleep(6000);
-    check('A second wipe is not answered, so it can never loop', b.pushes.filter((p) => p.url.includes('blueminimap')).length === pushes + 1, b.pushes.length - n);
+    check('A second wipe is not answered, so it can never loop', b.pushes.filter((p) => p.url.includes('bluemapmini')).length === pushes + 1, b.pushes.length - n);
     await b.cleanQuit();
     const again = await join('Tester');
     check('Rejoining restores the pack', await until(() => again.hudFrame(packOf(again)), 5000));
@@ -875,7 +869,7 @@ const GROUPS = {
     baseConfig({ 'pack.re-send-on-removal': false }); await reload();
     const c = await join('Tester'); await until(() => c.hudFrame(packOf(c)), 5000);
     s.cmd(`bmt magicpack Tester http://127.0.0.1:${packPort}/nope.zip`); await sleep(4000);
-    check('re-send-on-removal false leaves it removed', c.pushes.filter((p) => p.url.includes('blueminimap')).length === 1);
+    check('re-send-on-removal false leaves it removed', c.pushes.filter((p) => p.url.includes('bluemapmini')).length === 1);
     await c.cleanQuit();
   },
 
@@ -883,7 +877,7 @@ const GROUPS = {
     section('Pack settings');
     baseConfig(); await reload();
     const d = await join('Decline', { mode: 'decline', settle: 1200 });
-    check('Declining a required pack kicks with the custom message', d.kicked && d.kicked.includes('needs the BlueMinimap'), d.kicked);
+    check('Declining a required pack kicks with the custom message', d.kicked && d.kicked.includes('needs the BlueMapMini'), d.kicked);
     await d.cleanQuit();
     // An admin online, to hear about it.
     const admin = await join('Tester');
@@ -892,7 +886,7 @@ const GROUPS = {
     check('A failed download never kicks, even with the pack required', !fl.kicked && fl.ended === null, fl.kicked);
     check('The player is told the map is off and will try again', fl.chat.some((m) => /couldn't be downloaded, so the map is off for now/.test(m)), fl.chat.slice(-3).join(' | '));
     check('No map without the pack', fl.frames.length === 0, `${fl.frames.length} frames`);
-    check('The console says who and why', /FailDl didn't get the BlueMinimap pack: the download failed/.test(s.since(fm)));
+    check('The console says who and why', /FailDl didn't get the BlueMapMini pack: the download failed/.test(s.since(fm)));
     check('Admins online are warned', admin.chat.some((m) => /FailDl couldn't download the map's pack/.test(m)), admin.chat.slice(-2).join(' | '));
     const pushes = fl.pushes.length;
     fl.mode = 'accept'; // The hosting is fixed.
@@ -952,7 +946,7 @@ const GROUPS = {
 
   async icons() {
     section('Custom icons');
-    const folder = s.path('plugins/BlueMinimap/icons');
+    const folder = s.path('plugins/BlueMapMini/icons');
     const png = (w, h, fill) => {
       const raw = Buffer.alloc((w * 4 + 1) * h);
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (fill(x, y)) raw.writeUInt32BE(0xFFFFFFFF, y * (w * 4 + 1) + 1 + x * 4);
@@ -1009,7 +1003,7 @@ const GROUPS = {
     const clear = b.actionBars.slice(before).at(-1);
     check('/hud off clears the action bar', clear && !K.plainNbt(clear.text)?.font, JSON.stringify(clear?.text)?.slice(0, 80));
     await chat(b, '/hud on', /on/);
-    fs.copyFileSync(s.path('plugins/BlueMinimap/pack/blueminimap-pack.zip'), path.join(ROOT, `pack-actionbar-${label}.zip`));
+    fs.copyFileSync(s.path('plugins/BlueMapMini/pack/bluemapmini-pack.zip'), path.join(ROOT, `pack-actionbar-${label}.zip`));
     await b.cleanQuit();
     baseConfig(); await reload();
   },
@@ -1094,33 +1088,33 @@ const GROUPS = {
     s.cmd('execute as Tester run hud off'); check('execute as <player> works', await until(() => !b.hudFrame(packOf(b)), 3000));
     s.cmd('execute as Tester run hud on'); await until(() => b.hudFrame(packOf(b)), 3000);
     s.cmd('deop Tester'); await sleep(300);
-    const denied = await chat(b, '/blueminimap reload', /Incorrect|Unknown|permission/); check('Non-ops can not reload', denied, denied);
-    check('Non-ops can still use /blueminimap help', await chat(b, '/blueminimap help', /BlueMinimap/));
+    const denied = await chat(b, '/bluemapmini reload', /Incorrect|Unknown|permission/); check('Non-ops can not reload', denied, denied);
+    check('Non-ops can still use /bluemapmini help', await chat(b, '/bluemapmini help', /BlueMapMini/));
     s.cmd('op Tester');
-    s.cmd('bmt perm Tester blueminimap.use false');
-    check('Removing blueminimap.use hides everything', await until(() => !b.hudFrame(packOf(b)), 3000));
+    s.cmd('bmt perm Tester bluemapmini.use false');
+    check('Removing bluemapmini.use hides everything', await until(() => !b.hudFrame(packOf(b)), 3000));
     await chat(b, '/map'); await sleep(1000);
     check('Even fullscreen', !b.hudFrame(packOf(b)));
-    await chat(b, '/map'); s.cmd('bmt perm Tester blueminimap.use true');
+    await chat(b, '/map'); s.cmd('bmt perm Tester bluemapmini.use true');
     check('It returns with the permission', await until(() => b.hudFrame(packOf(b)), 3000));
-    s.cmd('bmt perm Tester blueminimap.fullscreen false'); await sleep(200);
+    s.cmd('bmt perm Tester bluemapmini.fullscreen false'); await sleep(200);
     await chat(b, '/map'); await sleep(800);
-    check('Losing blueminimap.fullscreen blocks /map', b.hudFrame(packOf(b))?.fontName === 'blueminimap:hud');
-    s.cmd('bmt perm Tester blueminimap.fullscreen true'); await sleep(300);
+    check('Losing bluemapmini.fullscreen blocks /map', b.hudFrame(packOf(b))?.fontName === 'bluemapmini:hud');
+    s.cmd('bmt perm Tester bluemapmini.fullscreen true'); await sleep(300);
     await b.cleanQuit();
 
     const m1 = s.mark();
     for (let i = 0; i < 12; i++) { const q = new Bot('Churn', port); await Promise.race([q.spawned, sleep(5000)]); await sleep(i % 3 === 0 ? 0 : 200 * (i % 4)); await q.cleanQuit(); }
     await sleep(800);
-    const dbg = await s.run('blueminimap debug', /(\d+) sessions/);
+    const dbg = await s.run('bluemapmini debug', /(\d+) sessions/);
     check('12 quick join/quits leave no sessions behind', dbg && +dbg[1] === 0, dbg?.[0]);
     check('And no errors', s.errors(m1).length === 0, s.errors(m1)[0]?.slice(0, 160) || '');
 
     b = await join('Tester'); s.cmd('op Tester'); await sleep(200);
     await tp('Tester', 0, 120, 0); await chat(b, '/hud zoom 2');
-    const dump = s.path(`plugins/BlueMinimap/debug-world.png`); fs.rmSync(dump, { force: true });
-    const w = await chat(b, '/blueminimap debug dump', /Wrote/, 40000);
-    check('/blueminimap debug dump writes a PNG', w && fs.existsSync(dump), w);
+    const dump = s.path(`plugins/BlueMapMini/debug-world.png`); fs.rmSync(dump, { force: true });
+    const w = await chat(b, '/bluemapmini debug dump', /Wrote/, 40000);
+    check('/bluemapmini debug dump writes a PNG', w && fs.existsSync(dump), w);
     if (fs.existsSync(dump)) {
       // The dump holds the plugin's averaged cells before the HUD's colour steps, which is truth.cell with a
       // step of 1. Exact, apart from tiles BlueMap may re-render while the test runs.
@@ -1137,11 +1131,11 @@ const GROUPS = {
       }
       check('The dump matches BlueMap cell for cell', n > 1000 && mism / n < 0.005, `${n} cells, ${mism} differ${example ? ', ' + example : ''}`);
     }
-    await chat(b, '/blueminimap debug pattern', /toggled/);
+    await chat(b, '/bluemapmini debug pattern', /toggled/);
     const pat = await until(() => { const fr = b.hudFrame(packOf(b)), gr = fr && gridOf(fr, 2); return gr && gr.cells[0] === 0xFFFFFF && gr.cells[1] === 0xFFFFFF; }, 3000);
     check('Test pattern shows its white border', pat);
-    await chat(b, '/blueminimap debug pattern', /toggled/);
-    const ex = await chat(b, '/blueminimap pack export', /pack is at/); check('/blueminimap pack export names the file', ex && fs.existsSync(s.path('plugins/BlueMinimap/pack/blueminimap-pack.zip')), ex);
+    await chat(b, '/bluemapmini debug pattern', /toggled/);
+    const ex = await chat(b, '/bluemapmini pack export', /pack is at/); check('/bluemapmini pack export names the file', ex && fs.existsSync(s.path('plugins/BlueMapMini/pack/bluemapmini-pack.zip')), ex);
     await b.cleanQuit();
   },
 
@@ -1151,9 +1145,9 @@ const GROUPS = {
     const bots = [];
     for (let i = 0; i < 20; i++) bots.push(await join(`L${i}`, { settle: 100 }));
     await sleep(2000);
-    s.cmd('blueminimap reload'); await sleep(1500); s.cmd('bmt gc'); await sleep(1000);
+    s.cmd('bluemapmini reload'); await sleep(1500); s.cmd('bmt gc'); await sleep(1000);
     for (const b of bots) { b.barBytes.length = 0; b.frames.length = 0; }
-    const dbgBefore = await s.run('blueminimap debug', /frames (\d+), average build (\d+) us/);
+    const dbgBefore = await s.run('bluemapmini debug', /frames (\d+), average build (\d+) us/);
     const m = s.mark(); const start = Date.now(); let tick = 0;
     while (Date.now() - start < 60000) {
       tick++;
@@ -1172,16 +1166,16 @@ const GROUPS = {
     check('Updates stay under 5 KB compressed on real terrain with 20 players', p95 < 5120, `p95 ${p95} B, largest ${max} B`);
     const perBot = all.length / bots.length / dur;
     check('Each player gets at most 4 updates a second', perBot <= 4.2, perBot.toFixed(2) + '/s');
-    const dbg = await s.run('blueminimap debug', /frames (\d+), average build (\d+) us, about (\d+) bytes/);
+    const dbg = await s.run('bluemapmini debug', /frames (\d+), average build (\d+) us, about (\d+) bytes/);
     check('Average frame build stays under 1 ms', dbg && +dbg[2] < 1000, dbg?.[0]);
     const h = await s.run('bmt health', /BMT mspt ([\d.]+) tps ([\d.]+) usedMB (\d+)/);
     console.log('  ' + h?.[0]);
     check('The server keeps 20 TPS', h && +h[2] > 19.5, h?.[0]);
     check('Server tick stays healthy', h && +h[1] < 50, h?.[1] + ' ms');
-    check('No errors under load', s.errors(m).filter((l) => /extantape|BlueMinimap/.test(l)).length === 0, s.errors(m).find((l) => /extantape|BlueMinimap/.test(l))?.slice(0, 160) || '');
+    check('No errors under load', s.errors(m).filter((l) => /extantape|BlueMapMini/.test(l)).length === 0, s.errors(m).find((l) => /extantape|BlueMapMini/.test(l))?.slice(0, 160) || '');
     for (const b of bots) b.quit();
     await sleep(2000);
-    const after = await s.run('blueminimap debug', /(\d+) sessions/);
+    const after = await s.run('bluemapmini debug', /(\d+) sessions/);
     check('All sessions are cleaned up', after && +after[1] === 0, after?.[0]);
   },
 };
@@ -1191,7 +1185,7 @@ const GROUPS = {
   const bukkit = s.path('bukkit.yml');
   fs.writeFileSync(bukkit, fs.readFileSync(bukkit, 'utf8').replace(/connection-throttle: \d+/, 'connection-throttle: -1'));
   const spigot = s.path('spigot.yml'); // The tests send commands faster than a person, and must not be kicked for it.
-  fs.writeFileSync(spigot, fs.readFileSync(spigot, 'utf8').replace(/spam-exclusions:\n(\s*)- .*/, 'spam-exclusions:\n$1- /hud\n$1- /map\n$1- /blueminimap\n$1- /skill').replace('enable-spam-exclusions: false', 'enable-spam-exclusions: true'));
+  fs.writeFileSync(spigot, fs.readFileSync(spigot, 'utf8').replace(/spam-exclusions:\n(\s*)- .*/, 'spam-exclusions:\n$1- /hud\n$1- /map\n$1- /bluemapmini\n$1- /skill').replace('enable-spam-exclusions: false', 'enable-spam-exclusions: true'));
   await s.start(); await sleep(6000);
   s.cmd('op Tester'); s.cmd('whitelist off'); s.cmd('difficulty easy'); s.cmd('gamerule keep_inventory true');
   for (const c of ['execute in minecraft:overworld run forceload add -32 -32 32 32']) s.cmd(c);
@@ -1200,8 +1194,8 @@ const GROUPS = {
     const m = s.mark();
     try { await GROUPS[n](); } catch (e) { check(`Group ${n} finished`, false, e.stack?.slice(0, 400)); }
     for (const bot of liveBots.splice(0)) if (bot.ended === null) await bot.cleanQuit();
-    const hudErrors = s.errors(m).filter((l) => /extantape|\[BlueMinimap\]/.test(l) && !/icons must be|Ignoring|no resource pack|doesn't contain|Could not download pack.public-url \(http:\/\/127.0.0.1:\d+\/custom.zip\)|no theme called sparkles|Theme broken couldn't be loaded|Theme ocean is hard to read|FailDl didn't get the BlueMinimap pack|Blair has blueminimap\.share\.receive true but the old bluemaphud\.share\.receive false|Tester has blueminimap\.share\.send true but the old bluemaphud\.share\.send false/.test(l));
-    check(`No BlueMinimap errors during ${n}`, hudErrors.length === 0, hudErrors[0]?.slice(0, 200) || '');
+    const hudErrors = s.errors(m).filter((l) => /extantape|\[BlueMapMini\]/.test(l) && !/icons must be|Ignoring|no resource pack|doesn't contain|Could not download pack.public-url \(http:\/\/127.0.0.1:\d+\/custom.zip\)|no theme called sparkles|Theme broken couldn't be loaded|Theme ocean is hard to read|FailDl didn't get the BlueMapMini pack/.test(l));
+    check(`No BlueMapMini errors during ${n}`, hudErrors.length === 0, hudErrors[0]?.slice(0, 200) || '');
     const drops = s.since(m).split('\n').filter((l) => /lost connection: (?!Disconnected|This server needs|.*resource pack)/.test(l));
     check(`No unexpected disconnects during ${n}`, drops.length === 0, drops[0]?.slice(0, 160) || '');
     await sleep(500);
