@@ -1,10 +1,10 @@
-# BlueMinimap
+# BlueMapMini
 
-BlueMinimap: a BlueMap minimap and coordinates HUD for Paper, rendered in game from [BlueMap](https://bluemap.bluecolored.de/)'s own tiles, with a fullscreen map too. It's an add-on to BlueMap, not a separate map: it needs BlueMap on the server and shows what BlueMap has rendered. It uses a small resource pack with its own namespace: no client mods, no shader overrides and no held map items.
+BlueMapMini: a BlueMap minimap and coordinates HUD for Paper, rendered in game from [BlueMap](https://bluemap.bluecolored.de/)'s own tiles, with a fullscreen map too. It's an add-on to BlueMap, not a separate map: it needs BlueMap on the server and shows what BlueMap has rendered. It uses a small resource pack with its own namespace: no client mods, no shader overrides and no held map items.
 
 It's an unofficial add-on for BlueMap and isn't affiliated with BlueMap's authors.
 
-**Status:** pre-release. It has passed a full test suite on live Paper 26.1.2, 26.2 and 26.3 servers with real BlueMap tiles, using a protocol bot. It hasn't been seen in a real game client yet. See [Testing](#testing).
+**Status:** pre-release, version 0.3.0, renamed from BlueMinimap (see below). It has passed a full test suite on live Paper 26.1.2, 26.2 and 26.3 servers with real BlueMap tiles, using a protocol bot. It hasn't been seen in a real game client yet. See [Testing](#testing).
 
 - Requires Paper 26.1 or newer, Java 25, and a BlueMap version that matches your server (see below). Java Edition only. Paper 1.21.11 and older aren't supported.
 - Works alongside other resource packs, because it never overrides a shader and only adds its own files.
@@ -19,15 +19,24 @@ These minimums come from BlueMap's release notes. Only BlueMap 5.29 was tested, 
 
 ## Install
 
-1. Put `BlueMinimap-<version>.jar` in `plugins/`, next to BlueMap.
+1. Put `BlueMapMini-<version>.jar` in `plugins/`, next to BlueMap.
 2. Open port `8164` so players can download the pack, or set `pack.public-url` to host it elsewhere. Servers sharing a machine each need their own `pack.port`. `pack.bind` picks the address it listens on (empty means every address); `127.0.0.1` keeps it on the server's own machine, for when the pack reaches players another way.
-3. Start the server. Settings are in `plugins/BlueMinimap/config.yml`.
+3. Start the server. Settings are in `plugins/BlueMapMini/config.yml`.
 
 If BlueMap stores its maps in SQL, set `tiles.source: http`.
 
+## Upgrading from BlueMinimap
+
+BlueMapMini was called BlueMinimap in 0.2.x, and renamed in 0.3.0 (D194) so its name starts with BlueMap like the other BlueMap add-ons. Players keep their HUD settings.
+
+- With the server stopped, swap `BlueMinimap-0.2.1.jar` for `BlueMapMini-0.3.0.jar`.
+- On first start, `plugins/BlueMinimap/` is copied to `plugins/BlueMapMini/` if that doesn't exist yet, so your config, themes and icons come across. The old folder is left untouched. The pack is rebuilt as `plugins/BlueMapMini/pack/bluemapmini-pack.zip`; if you host the pack yourself (`public-url`), upload the new file.
+- It still answers to the name BlueMinimap, so HouseRules and anything else that looks for BlueMinimap keeps working without an update. The share event keeps its class, `com.extantape.blueminimap.api.CoordinateShareEvent`.
+- For 0.3.x only, the old names still work: `/blueminimap` and the `blueminimap.*` permissions, alongside BlueMapHUD's. For permissions that are on by default, a "no" on any of the names wins, so a group you'd stopped from sharing stays stopped. Set the `bluemapmini.*` names instead.
+
 ## Upgrading from BlueMapHUD
 
-BlueMinimap was called BlueMapHUD up to 0.1.0, and renamed in 0.2.0. Players keep their HUD settings.
+It was called BlueMapHUD up to 0.1.0, and BlueMinimap in 0.2.x. Players keep their HUD settings.
 
 - With the server stopped, swap `BlueMapHUD-0.1.0.jar` for `BlueMinimap-0.2.0.jar`.
 - On first start, `plugins/BlueMapHUD/` is copied to `plugins/BlueMinimap/` if that doesn't exist yet, so your config, themes and icons come across. The old folder is left untouched as a backup; nothing is overwritten. The pack is rebuilt as `plugins/BlueMinimap/pack/blueminimap-pack.zip`. If you host the pack yourself (`public-url`), upload the new file.
@@ -52,25 +61,25 @@ BlueMinimap was called BlueMapHUD up to 0.1.0, and renamed in 0.2.0. Players kee
 | `/hud hide\|show shares` | Stops or restarts receiving coordinates other players share. |
 | `/hud theme`, `/hud theme <name>\|default` | Lists the themes, with yours marked and each one clickable, or switches to one. `default` goes back to the server's. The choice is saved per player. |
 | `/hud mode coords\|map` | `coords` shows only the X, Y, Z and facing line, in the same bar, and works in worlds BlueMap doesn't map. `map` brings the minimap back. Both turn the HUD on, and `/hud mode` alone says which one you have. New players start in `hud.default-mode`, which is `map` unless the config says `coords`. |
-| `/blueminimap help` | Shows help. |
-| `/blueminimap reload` | Reloads the config, and re-sends the pack if it changed. |
-| `/blueminimap debug` | Shows cache sizes, build times and update sizes. |
-| `/blueminimap debug dump` | Writes your view to a PNG to compare with BlueMap. |
-| `/blueminimap debug pattern` | Shows a test pattern. |
-| `/blueminimap pack export` | Shows where the pack zip is, its SHA-1, and the address players are sent. |
+| `/bluemapmini help` | Shows help. |
+| `/bluemapmini reload` | Reloads the config, and re-sends the pack if it changed. |
+| `/bluemapmini debug` | Shows cache sizes, build times and update sizes. |
+| `/bluemapmini debug dump` | Writes your view to a PNG to compare with BlueMap. |
+| `/bluemapmini debug pattern` | Shows a test pattern. |
+| `/bluemapmini pack export` | Shows where the pack zip is, its SHA-1, and the address players are sent. |
 
-If another plugin owns a name, BlueMinimap backs off: `/map` to `/worldmap`, then `/blueminimap map`, and `/hud` to `/minimap`, then `/blueminimap hud`. It logs which names it got. `/blueminimap map`, `/blueminimap hud`, `/blueminimap:map` and `/blueminimap:hud` always work. New names apply after a restart.
+If another plugin owns a name, BlueMapMini backs off: `/map` to `/worldmap`, then `/bluemapmini map`, and `/hud` to `/minimap`, then `/bluemapmini hud`. It logs which names it got. `/bluemapmini map`, `/bluemapmini hud`, `/bluemapmini:map` and `/bluemapmini:hud` always work. New names apply after a restart.
 
 ## Permissions
 
 | Permission | Default | Allows |
 | --- | --- | --- |
-| `blueminimap.use` | everyone | Seeing the map at all. Removing it hides everything for that group. |
-| `blueminimap.fullscreen` | everyone | The fullscreen map. |
-| `blueminimap.seeplayers` | everyone | Other players on the map. |
-| `blueminimap.share.send` | everyone | Sharing your coordinates with `/hud share`. |
-| `blueminimap.share.receive` | everyone | Receiving coordinates other players share. |
-| `blueminimap.admin` | ops | `/blueminimap reload`, `debug` and `pack`. |
+| `bluemapmini.use` | everyone | Seeing the map at all. Removing it hides everything for that group. |
+| `bluemapmini.fullscreen` | everyone | The fullscreen map. |
+| `bluemapmini.seeplayers` | everyone | Other players on the map. |
+| `bluemapmini.share.send` | everyone | Sharing your coordinates with `/hud share`. |
+| `bluemapmini.share.receive` | everyone | Receiving coordinates other players share. |
+| `bluemapmini.admin` | ops | `/bluemapmini reload`, `debug` and `pack`. |
 
 ## Themes and the clock
 
@@ -87,7 +96,7 @@ A theme sets the HUD's colours, the plate behind the coordinates and the look of
 
 The clock follows the coordinates as a small picture and 24-hour time, such as `18:30`. It changes every `hud.clock.step-minutes` in-game minutes, 5 by default, and its digits are fixed-width, so the line never shifts. It's hidden where time stands still, such as the Nether and the End. `hud.clock.enabled: false` turns it off for everyone, and `/hud hide clock` for one player.
 
-**Your own theme.** Copy one of the files in [`src/main/resources/themes`](src/main/resources/themes) into `plugins/BlueMinimap/themes/`, rename it (lowercase, such as `ocean.json`), change it, and run `/blueminimap reload`. A file with a built-in theme's name replaces it. The file holds:
+**Your own theme.** Copy one of the files in [`src/main/resources/themes`](src/main/resources/themes) into `plugins/BlueMapMini/themes/`, rename it (lowercase, such as `ocean.json`), change it, and run `/bluemapmini reload`. A file with a built-in theme's name replaces it. The file holds:
 
 - `name`: the name players see.
 - `colors`: `text`, `facing`, `time` and `legend` for text, `plate` for the plate, and `self`, `player`, `poi`, `death` and `north` for the map's icons. Each is `#RRGGBB`.
@@ -101,23 +110,23 @@ Up to 8 themes fit in the pack. Every built-in theme passes the same readability
 
 `/hud share` sends your current coordinates to people you choose, as a chat message with the coordinates and the dimension, such as `Alex shared where they are: 120 64 -35 in the Overworld`. Clicking the numbers copies them. Nothing is shared unless a player asks, and there's no teleport link.
 
-- **Who can receive:** by default, players in the sender's world, counting its `_nether` and `_the_end` as the same world, who can see the sender, have `blueminimap.share.receive`, and haven't turned shares off with `/hud hide shares`.
+- **Who can receive:** by default, players in the sender's world, counting its `_nether` and `_the_end` as the same world, who can see the sender, have `bluemapmini.share.receive`, and haven't turned shares off with `/hud hide shares`.
 - **Feedback:** the sender is told exactly who got their coordinates, and who couldn't.
 - **Limits:** a player waits `share.cooldown-seconds` (30 by default) between shares, and each share is logged to the console. `share.enabled: false` turns sharing off.
 
-**Your server's own rules.** BlueMinimap fires `com.extantape.blueminimap.api.CoordinateShareEvent` on the main thread before each share. It carries the sender, the world, the block coordinates and a mutable set of recipients. A plugin can remove recipients, for example to match who may chat with whom, or cancel the share. With `share.candidates: all-online`, recipients can include every player online, so that such a plugin can follow rules that reach across worlds. BlueMinimap only widens a share like that while a plugin is listening to the event, and logs a warning at startup if nothing is. To build against it, depend on BlueMinimap as a server dependency with `join-classpath: true` in your `paper-plugin.yml`.
+**Your server's own rules.** BlueMapMini fires `com.extantape.blueminimap.api.CoordinateShareEvent` on the main thread before each share. It carries the sender, the world, the block coordinates and a mutable set of recipients. A plugin can remove recipients, for example to match who may chat with whom, or cancel the share. With `share.candidates: all-online`, recipients can include every player online, so that such a plugin can follow rules that reach across worlds. BlueMapMini only widens a share like that while a plugin is listening to the event, and logs a warning at startup if nothing is. To build against it, depend on BlueMapMini as a server dependency with `join-classpath: true` in your `paper-plugin.yml`.
 
 ## Resource packs
 
 The plugin sends its pack alongside any others using the multi-pack API, and players don't see a map until their client confirms it loaded. With `pack.required`, a player who declines the pack is kicked with `pack.kick-message`. A download that fails never kicks: the player plays without the map and is told why, admins are warned, and the pack is offered again when they change worlds or rejoin. Its only file outside its own namespace is a transparent boss bar texture, in pink by default. If another pack restyles that colour, set `pack.boss-bar-color` to one it leaves alone.
 
-**Using it with Magic.** Magic sends its pack with Bukkit's older one-pack method, which clears every other server pack. BlueMinimap re-sends its pack once when that happens, but it's better to stop the conflict. In `plugins/Magic/config.yml` set `resource_pack: ""`, then add Magic's pack to your main pack.
+**Using it with Magic.** Magic sends its pack with Bukkit's older one-pack method, which clears every other server pack. BlueMapMini re-sends its pack once when that happens, but it's better to stop the conflict. In `plugins/Magic/config.yml` set `resource_pack: ""`, then add Magic's pack to your main pack.
 
-**Hosting it elsewhere.** Set `pack.public-url` to where you upload `plugins/BlueMinimap/pack/blueminimap-pack.zip`. Upload it unchanged, because re-zipping changes its SHA-1 and clients reject a pack whose hash doesn't match. `{sha1}` in the address is replaced with the pack's hash, such as `https://example.com/packs/{sha1}.zip`, so the address changes whenever the pack does. The same settings and plugin version always build the same hash. On startup and `/blueminimap reload` the plugin downloads the address once in the background and warns, with both hashes, if it isn't the current pack. It never blocks startup. If the server can't reach the address but players can, set `pack.verify-public-url: false`. `/blueminimap pack export` shows the path, the hash and the address players are sent.
+**Hosting it elsewhere.** Set `pack.public-url` to where you upload `plugins/BlueMapMini/pack/bluemapmini-pack.zip`. Upload it unchanged, because re-zipping changes its SHA-1 and clients reject a pack whose hash doesn't match. `{sha1}` in the address is replaced with the pack's hash, such as `https://example.com/packs/{sha1}.zip`, so the address changes whenever the pack does. The same settings and plugin version always build the same hash. On startup and `/bluemapmini reload` the plugin downloads the address once in the background and warns, with both hashes, if it isn't the current pack. It never blocks startup. If the server can't reach the address but players can, set `pack.verify-public-url: false`. `/bluemapmini pack export` shows the path, the hash and the address players are sent.
 
-**Using a merged pack.** Set `pack.send: false`, run `/blueminimap pack export`, and merge that zip into your server's pack. On startup the plugin warns if its files are missing.
+**Using a merged pack.** Set `pack.send: false`, run `/bluemapmini pack export`, and merge that zip into your server's pack. On startup the plugin warns if its files are missing.
 
-**Custom icons.** Put 9x9 PNGs in `plugins/BlueMinimap/icons/` and run `/blueminimap reload`. The names are `arrow_00.png` to `arrow_15.png` (clockwise from north), `player.png`, `poi.png`, `death.png` and `north.png`. Draw them in white, because the plugin tints them.
+**Custom icons.** Put 9x9 PNGs in `plugins/BlueMapMini/icons/` and run `/bluemapmini reload`. The names are `arrow_00.png` to `arrow_15.png` (clockwise from north), `player.png`, `poi.png`, `death.png` and `north.png`. Draw them in white, because the plugin tints them.
 
 ## Known limits
 
@@ -145,7 +154,7 @@ Measured in the test suite on a synthetic map:
 | Minimap update, 32x32 with 20 players, compressed | about 1.7 KB | 5 KB |
 | Fullscreen update, 96x54, compressed | about 4.5 KB | none |
 
-Real terrain has more colour variation than the test map, so expect larger updates in play. `/blueminimap debug` reports sizes before compression.
+Real terrain has more colour variation than the test map, so expect larger updates in play. `/bluemapmini debug` reports sizes before compression.
 
 ## Testing
 
@@ -166,14 +175,14 @@ The live tests are in [`test/live`](test/live/README.md), with what they cover a
 - **Hiding:** vanish, `hidePlayer`, spectators, invisibility, players hidden in BlueMap, the radius, other dimensions, permissions, other boss bars, the Wither, the Ender Dragon and every `auto-hide` setting.
 - **Updates:** nothing is sent while idle apart from each clock step, and at most 4 updates a second otherwise.
 - **Pack handling:** required, optional and declined packs, failed downloads (no kick, a message, an admin warning and a retry on world change), `host`, `public-url` with and without `{sha1}`, the hosted-pack check (matching, stale, missing, unreachable, never answering, invalid and turned off), `send: false`, bar colours, custom icons, and another plugin wiping packs with the old one-pack method.
-- **Life cycle:** `/blueminimap reload`, `/bluemap reload`, a full `/reload`, server restarts, saved settings and quick join/quits.
+- **Life cycle:** `/bluemapmini reload`, `/bluemap reload`, a full `/reload`, server restarts, saved settings and quick join/quits.
 - **Bad data:** corrupt tiles, a wrong web root, an unreachable webserver and the far edge of the world.
 - **Other setups:** the action bar channel, the HTTP source, and command back-off from another plugin's `plugin.yml` commands.
 
 **Also passed:**
 
 - **SQL storage:** on 26.3, tiles held in SQLite through the HTTP source matched the same world rendered to files on all 1024 cells.
-- **Startup:** BlueMap loaded on all 8 of 8 restarts of a 26.3 server with BlueMinimap installed.
+- **Startup:** BlueMap loaded on all 8 of 8 restarts of a 26.3 server with BlueMapMini installed.
 - **Game code:** the Minecraft 26.1.2, 26.2 and 26.3 client code loads the generated pack and fonts, with the game's advances matching this project's for all 18,944 glyphs, the clock pictures and fixed-width time digits included. The 26.1, 26.1.1 and 26.1.2 clients all use resource pack format 84, the pack's minimum.
 
 **20 moving players, one minute, on real terrain.** 26.3 is this release, with themes and the clock; 26.1.2 and 26.2 were measured on the build just before them:
@@ -195,7 +204,7 @@ These ran on a shared machine with other test servers running, so tick times var
 - ZigZag loaded alongside the pack in a client. It overlaps only on the pink boss bar textures, which this pack replaces.
 - A Bedrock join, including Floodgate detection through `paper-plugin.yml`'s classpath sharing, MySQL or PostgreSQL storage, and back-off from another plugin's Brigadier commands.
 
-To check a real client, join as an op and run `/blueminimap debug pattern`. You should see a sharp colour gradient with a white border and no bar behind it.
+To check a real client, join as an op and run `/bluemapmini debug pattern`. You should see a sharp colour gradient with a white border and no bar behind it.
 
 ## Building
 

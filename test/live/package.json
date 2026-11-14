@@ -1,7 +1,7 @@
 {
-  "name": "blueminimap-live-tests",
+  "name": "bluemapmini-live-tests",
   "private": true,
-  "description": "Live tests for BlueMinimap: throwaway Paper servers driven by a protocol bot.",
+  "description": "Live tests for BlueMapMini: throwaway Paper servers driven by a protocol bot.",
   "license": "MIT",
   "type": "commonjs",
   "engines": {

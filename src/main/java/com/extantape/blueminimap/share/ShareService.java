@@ -1,6 +1,6 @@
 package com.extantape.blueminimap.share;
 
-import com.extantape.blueminimap.BlueMinimapPlugin;
+import com.extantape.blueminimap.BlueMapMiniPlugin;
 import com.extantape.blueminimap.api.CoordinateShareEvent;
 import com.extantape.blueminimap.config.HudConfig;
 import net.kyori.adventure.text.Component;
@@ -28,14 +28,14 @@ import java.util.UUID;
  * players can turn receiving off. Other plugins can narrow or stop any share through {@link CoordinateShareEvent}.
  */
 public final class ShareService {
-    public static final String SEND = "blueminimap.share.send";
-    public static final String RECEIVE = "blueminimap.share.receive";
+    public static final String SEND = "bluemapmini.share.send";
+    public static final String RECEIVE = "bluemapmini.share.receive";
 
-    private final BlueMinimapPlugin plugin;
+    private final BlueMapMiniPlugin plugin;
     /** When each player last shared. Kept across rejoins, so leaving can't skip the cooldown. */
     private final Map<UUID, Long> lastShare = new HashMap<>();
 
-    public ShareService(BlueMinimapPlugin plugin) {
+    public ShareService(BlueMapMiniPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -186,7 +186,7 @@ public final class ShareService {
 
     /**
      * HouseRules 0.1.x listens for the share event under BlueMapHUD's old name, so it wouldn't see shares from
-     * BlueMinimap and they'd skip its chat circles. Fail closed: no shares until HouseRules is 0.2 or newer.
+     * BlueMapMini and they'd skip its chat circles. Fail closed: no shares until HouseRules is 0.2 or newer.
      */
     static String olderHouseRules(String version) {
         if (version == null) return null;
@@ -197,7 +197,7 @@ public final class ShareService {
         } catch (NumberFormatException e) {
             // Unreadable version: treat it as too old.
         }
-        return "Coordinate sharing is off because HouseRules " + version + " can't see BlueMinimap's shares, so they'd skip its chat circles. Update HouseRules to 0.2.0 or newer.";
+        return "Coordinate sharing is off because HouseRules " + version + " can't see BlueMapMini's shares, so they'd skip its chat circles. Update HouseRules to 0.2.0 or newer.";
     }
 
     private String olderHouseRules() {

@@ -48,7 +48,7 @@ public final class PublicUrlCheck {
                 }
                 return new Result(false, "The file at pack.public-url doesn't match the pack this plugin built. Hosted SHA-1 "
                         + actual + ", built " + expectedSha1 + ". Players will fail the download" + kickNote()
-                        + ". Upload plugins/BlueMinimap/pack/blueminimap-pack.zip unchanged to " + url + ".");
+                        + ". Upload plugins/BlueMapMini/pack/bluemapmini-pack.zip unchanged to " + url + ".");
             }
         } catch (IllegalArgumentException e) {
             return new Result(false, "pack.public-url isn't a valid address: " + url);

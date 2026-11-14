@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 /**
  * The themes the pack is built with: the built-in ones from the jar's {@code themes/} folder, plus or
- * replaced by any in the server's {@code plugins/BlueMinimap/themes/}. The pack holds every theme, so a
+ * replaced by any in the server's {@code plugins/BlueMapMini/themes/}. The pack holds every theme, so a
  * player can switch with {@code /hud theme} without a new download.
  */
 public final class ThemeSet {

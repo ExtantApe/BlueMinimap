@@ -61,7 +61,7 @@ public final class FontLayout {
     public FontLayout(String name, int layoutIndex, int step, int rows, int reservedRows, Direction direction,
                       int plateVariants, int clockGlyphs, int onlyReadoutRow) {
         this.name = name;
-        this.font = Key.key("blueminimap", name);
+        this.font = Key.key("bluemapmini", name);
         this.layoutIndex = layoutIndex;
         this.step = step;
         this.rows = rows;

@@ -121,7 +121,7 @@ public record HudConfig(
         Pack pack = new Pack(
                 c.getBoolean("pack.send", true),
                 c.getBoolean("pack.required", true),
-                c.getString("pack.kick-message", "This server needs the BlueMinimap resource pack."),
+                c.getString("pack.kick-message", "This server needs the BlueMapMini resource pack."),
                 c.getString("pack.prompt", ""),
                 c.getInt("pack.port", 8164),
                 c.getString("pack.bind", "").trim(),

@@ -51,7 +51,7 @@ public final class GridCache implements AutoCloseable {
     private final Logger logger;
     private final Set<ChunkKey> loading = ConcurrentHashMap.newKeySet();
     private final ExecutorService loaders = Executors.newFixedThreadPool(2, runnable -> {
-        Thread thread = new Thread(runnable, "BlueMinimap-tiles");
+        Thread thread = new Thread(runnable, "BlueMapMini-tiles");
         thread.setDaemon(true);
         thread.setPriority(Thread.NORM_PRIORITY - 1);
         return thread;

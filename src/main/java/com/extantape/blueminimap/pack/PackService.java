@@ -67,7 +67,7 @@ public final class PackService {
         this.pack = built;
         Files.createDirectories(packFolder);
         Files.write(exportPath(), built.zip());
-        servedPath = "/blueminimap-" + built.sha1Hex() + ".zip";
+        servedPath = "/bluemapmini-" + built.sha1Hex() + ".zip";
         servedBytes = built.zip();
         if (config.send() && config.publicUrl().isBlank()) startServer(config.port(), config.bind());
         else stopServer();
@@ -83,13 +83,13 @@ public final class PackService {
         return PublicUrlCheck.fill(config.publicUrl(), pack.sha1Hex());
     }
 
-    /** The last public-url check's result, for /blueminimap debug. */
+    /** The last public-url check's result, for /bluemapmini debug. */
     public String publicUrlStatus() {
         return publicUrlStatus;
     }
 
     public Path exportPath() {
-        return packFolder.resolve("blueminimap-pack.zip");
+        return packFolder.resolve("bluemapmini-pack.zip");
     }
 
     public String sha1() {
@@ -118,15 +118,15 @@ public final class PackService {
                 + "It'll try again when you change worlds or rejoin.", NamedTextColor.YELLOW));
         String reason = status == PlayerResourcePackStatusEvent.Status.INVALID_URL ? "the address was invalid"
                 : status == PlayerResourcePackStatusEvent.Status.FAILED_RELOAD ? "it didn't load" : "the download failed";
-        plugin.getLogger().warning(player.getName() + " didn't get the BlueMinimap pack: " + reason + ". They're playing without the map."
-                + " Check the pack's hosting; /blueminimap pack export shows the address players are sent.");
+        plugin.getLogger().warning(player.getName() + " didn't get the BlueMapMini pack: " + reason + ". They're playing without the map."
+                + " Check the pack's hosting; /bluemapmini pack export shows the address players are sent.");
         long now = System.currentTimeMillis();
         if (now - lastAdminWarning < ADMIN_WARNING_GAP_MILLIS) return;
         lastAdminWarning = now;
-        Component warning = Component.text("[BlueMinimap] " + player.getName() + " couldn't download the map's pack (" + reason
-                + "). Check the pack's hosting. /blueminimap pack export shows the address.", NamedTextColor.GOLD);
+        Component warning = Component.text("[BlueMapMini] " + player.getName() + " couldn't download the map's pack (" + reason
+                + "). Check the pack's hosting. /bluemapmini pack export shows the address.", NamedTextColor.GOLD);
         for (Player admin : Bukkit.getOnlinePlayers()) {
-            if (com.extantape.blueminimap.Perms.has(admin, "blueminimap.admin")) admin.sendMessage(warning);
+            if (com.extantape.blueminimap.Perms.has(admin, "bluemapmini.admin")) admin.sendMessage(warning);
         }
     }
 
@@ -218,7 +218,7 @@ public final class PackService {
                     + " Players elsewhere need pack.public-url (or pack.send: false with the files merged into your own pack).");
         }
         server.setExecutor(Executors.newFixedThreadPool(2, runnable -> {
-            Thread thread = new Thread(runnable, "BlueMinimap-pack");
+            Thread thread = new Thread(runnable, "BlueMapMini-pack");
             thread.setDaemon(true);
             return thread;
         }));
@@ -295,14 +295,14 @@ public final class PackService {
                 boolean found = false;
                 try (ZipInputStream zip = new ZipInputStream(response.body())) {
                     for (ZipEntry entry; (entry = zip.getNextEntry()) != null; ) {
-                        if (entry.getName().equals("assets/blueminimap/font/hud.json")) {
+                        if (entry.getName().equals("assets/bluemapmini/font/hud.json")) {
                             found = true;
                             break;
                         }
                     }
                 }
                 if (!found) {
-                    plugin.getLogger().warning("The server's resource pack doesn't contain BlueMinimap's files. Merge " + exportPath() + " into it.");
+                    plugin.getLogger().warning("The server's resource pack doesn't contain BlueMapMini's files. Merge " + exportPath() + " into it.");
                 }
             } catch (IOException | RuntimeException e) {
                 plugin.getLogger().warning("Could not check the server's resource pack: " + e.getMessage());

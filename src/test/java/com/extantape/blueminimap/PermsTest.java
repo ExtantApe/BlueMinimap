@@ -29,40 +29,59 @@ class PermsTest {
         List<String> log = new ArrayList<>();
         Perms.logTo(log::add);
         // A children's group had bluemaphud.share.send set to false; the new node is still at its default, true.
-        Permissible kid = with(Map.of("blueminimap.share.send", true, "bluemaphud.share.send", false));
-        assertFalse(Perms.has(kid, "blueminimap.share.send"));
+        Permissible kid = with(Map.of("bluemapmini.share.send", true, "blueminimap.share.send", true, "bluemaphud.share.send", false));
+        assertFalse(Perms.has(kid, "bluemapmini.share.send"));
         assertEquals(1, log.size());
-        assertTrue(log.get(0).contains("set blueminimap.share.send"), log.get(0));
+        assertTrue(log.get(0).contains("set bluemapmini.share.send"), log.get(0));
     }
 
     @Test
     void aNewDenyOnADefaultOnNodeDenies() {
-        Permissible p = with(Map.of("blueminimap.share.receive", false, "bluemaphud.share.receive", true));
-        assertFalse(Perms.has(p, "blueminimap.share.receive"));
+        Permissible p = with(Map.of("bluemapmini.share.receive", false, "blueminimap.share.receive", true, "bluemaphud.share.receive", true));
+        assertFalse(Perms.has(p, "bluemapmini.share.receive"));
     }
 
     @Test
     void untouchedDefaultsAgree() {
-        Permissible p = with(Map.of("blueminimap.use", true, "bluemaphud.use", true));
-        assertTrue(Perms.has(p, "blueminimap.use"));
-        assertFalse(Perms.has(with(Map.of()), "blueminimap.admin"));
+        Permissible p = with(Map.of("bluemapmini.use", true, "blueminimap.use", true, "bluemaphud.use", true));
+        assertTrue(Perms.has(p, "bluemapmini.use"));
+        assertFalse(Perms.has(with(Map.of()), "bluemapmini.admin"));
+    }
+
+    @Test
+    void aBlueMinimapDenyOnAChildrensGroupStillDeniesAfterTheRename() {
+        // D194: a children's group set blueminimap.share.receive to false in 0.2.x. After the rename it must stay off.
+        // (share.receive, so the warn-once log doesn't overlap the test above.)
+        List<String> log = new ArrayList<>();
+        Perms.logTo(log::add);
+        Permissible kid = with(Map.of("bluemapmini.share.receive", true, "blueminimap.share.receive", false, "bluemaphud.share.receive", true));
+        assertFalse(Perms.has(kid, "bluemapmini.share.receive"));
+        assertTrue(log.getFirst().contains("blueminimap.share.receive false"), log.getFirst());
+    }
+
+    @Test
+    void aBlueMinimapAdminGrantStillGrants() {
+        assertTrue(Perms.has(with(Map.of("blueminimap.admin", true)), "bluemapmini.admin"));
     }
 
     @Test
     void anOldAdminGrantStillGrants() {
         Permissible mod = with(Map.of("bluemaphud.admin", true));
-        assertTrue(Perms.has(mod, "blueminimap.admin"));
+        assertTrue(Perms.has(mod, "bluemapmini.admin"));
     }
 
     @Test
     void everyDeclaredNodeHasAnOldTwinWithTheSameDefault() throws Exception {
         String yml = new String(PermsTest.class.getResourceAsStream("/paper-plugin.yml").readAllBytes());
         for (String node : List.of("use", "fullscreen", "seeplayers", "share.send", "share.receive", "admin")) {
-            int now = yml.indexOf("  blueminimap." + node + ":\n"), old = yml.indexOf("  bluemaphud." + node + ":\n");
-            assertTrue(now >= 0 && old >= 0, node);
+            int now = yml.indexOf("  bluemapmini." + node + ":\n");
+            assertTrue(now >= 0, node);
             String d1 = yml.substring(yml.indexOf("default:", now)).split("\n")[0];
-            String d2 = yml.substring(yml.indexOf("default:", old)).split("\n")[0];
-            assertEquals(d1, d2, node);
+            for (String prefix : List.of("blueminimap.", "bluemaphud.")) {
+                int old = yml.indexOf("  " + prefix + node + ":\n");
+                assertTrue(old >= 0, prefix + node);
+                assertEquals(d1, yml.substring(yml.indexOf("default:", old)).split("\n")[0], prefix + node);
+            }
         }
     }
 
@@ -71,8 +90,8 @@ class PermsTest {
         List<String> log = new ArrayList<>();
         Perms.logTo(log::add);
         // The admin set the new name to false; the old one is still at its default, true. Nothing to tell them.
-        Permissible p = with(Map.of("blueminimap.seeplayers", false, "bluemaphud.seeplayers", true));
-        assertFalse(Perms.has(p, "blueminimap.seeplayers"));
+        Permissible p = with(Map.of("bluemapmini.seeplayers", false, "bluemaphud.seeplayers", true));
+        assertFalse(Perms.has(p, "bluemapmini.seeplayers"));
         assertTrue(log.isEmpty(), String.valueOf(log));
     }
 
@@ -80,8 +99,8 @@ class PermsTest {
     void aNewAdminGrantWithTheOldNodeAtItsDefaultLogsNothing() {
         List<String> log = new ArrayList<>();
         Perms.logTo(log::add);
-        Permissible p = with(Map.of("blueminimap.admin", true, "bluemaphud.admin", false));
-        assertTrue(Perms.has(p, "blueminimap.admin"));
+        Permissible p = with(Map.of("bluemapmini.admin", true, "bluemaphud.admin", false));
+        assertTrue(Perms.has(p, "bluemapmini.admin"));
         assertTrue(log.isEmpty(), String.valueOf(log));
     }
 }

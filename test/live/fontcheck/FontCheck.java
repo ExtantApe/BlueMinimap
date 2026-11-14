@@ -45,7 +45,7 @@ public class FontCheck {
         StringBuilder out = new StringBuilder("{");
         boolean firstFont = true;
         for (String path : new TreeSet<>(files.keySet())) {
-            if (!path.startsWith("assets/blueminimap/font/")) continue;
+            if (!path.startsWith("assets/bluemapmini/font/")) continue;
             String name = path.substring(path.lastIndexOf('/') + 1, path.length() - 5);
             JsonArray providers = JsonParser.parseString(new String(files.get(path), StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonArray("providers");
             int glyphs = 0;

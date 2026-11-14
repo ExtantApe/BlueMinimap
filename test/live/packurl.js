@@ -1,4 +1,4 @@
-// Live test for pack.public-url with {sha1}, the hosted-pack check, and /blueminimap pack export.
+// Live test for pack.public-url with {sha1}, the hosted-pack check, and /bluemapmini pack export.
 // Usage: node packurl.js <label> <dir> <jar> <port> <packPort> <webPort> <hostPort>
 // A local HTTP server stands in for the real host, such as a CDN or a per-build address.
 const K = require('./lib.js');
@@ -7,8 +7,8 @@ const fs = require('fs'), path = require('path'), http = require('http'), crypto
 const [label, dir, jar, portS, packPortS, webPortS, hostPortS] = process.argv.slice(2);
 const port = +portS, packPort = +packPortS, webPort = +webPortS, hostPort = +hostPortS;
 const s = new Server(dir, jar, port);
-const CFG = s.path('plugins/BlueMinimap/config.yml');
-const EXPORT = s.path('plugins/BlueMinimap/pack/blueminimap-pack.zip');
+const CFG = s.path('plugins/BlueMapMini/config.yml');
+const EXPORT = s.path('plugins/BlueMapMini/pack/bluemapmini-pack.zip');
 const sha = (buf) => crypto.createHash('sha1').update(buf).digest('hex');
 
 // A stand-in for a per-build host address: /<token>/<file>, served from memory.
@@ -26,8 +26,8 @@ const urlFor = (h) => `http://127.0.0.1:${hostPort}/tok123/${h}.zip`;
 
 function setPack(edits) { editYaml(CFG, edits); }
 async function reload() {
-  const m = s.mark(); s.cmd('blueminimap reload');
-  const ok = await s.waitLog(/BlueMinimap reloaded/, 10000, m);
+  const m = s.mark(); s.cmd('bluemapmini reload');
+  const ok = await s.waitLog(/BlueMapMini reloaded/, 10000, m);
   return { m, ok };
 }
 const builtSha = () => sha(fs.readFileSync(EXPORT));
@@ -60,13 +60,13 @@ async function join(name) {
   let ok = await s.waitLog(/serves the current pack \(SHA-1 (\w+)\)/, 20000, r.m);
   check('Reload re-checks and confirms the hosted pack', ok && ok[1] === first, ok && ok[1]);
   check('Same settings rebuild the same hash', builtSha() === first);
-  let m = s.mark(); s.cmd('blueminimap debug');
+  let m = s.mark(); s.cmd('bluemapmini debug');
   let dbg = await s.waitLog(/public-url (matches|[^\n]*)/, 5000, m);
-  check('/blueminimap debug shows the check result', dbg && dbg[1].startsWith('matches'), dbg && dbg[1]);
-  m = s.mark(); s.cmd('blueminimap pack export');
+  check('/bluemapmini debug shows the check result', dbg && dbg[1].startsWith('matches'), dbg && dbg[1]);
+  m = s.mark(); s.cmd('bluemapmini pack export');
   await s.waitLog(/Players are sent/, 5000, m); await sleep(200);
   const exp = s.since(m);
-  check('Export gives the path and SHA-1', exp.includes('blueminimap-pack.zip, SHA-1 ' + first), exp.trim().split('\n')[0]);
+  check('Export gives the path and SHA-1', exp.includes('bluemapmini-pack.zip, SHA-1 ' + first), exp.trim().split('\n')[0]);
   check('Export says to upload it unchanged', /upload that zip unchanged/.test(exp));
   check('Export gives the filled-in address and check status', exp.includes(`Players are sent ${urlFor(first)} (check: matches)`));
 
@@ -85,7 +85,7 @@ async function join(name) {
   r = await reload();
   const stale = await s.waitLog(/doesn't match the pack this plugin built\. Hosted SHA-1 (\w+), built (\w+)/, 20000, r.m);
   check('A stale hosted file warns with both hashes', stale && stale[1] === sha(Buffer.from('an older pack')) && stale[2] === first, stale && stale[0]);
-  check('The warning is a WARN line, not an error', /WARN\]: \[BlueMinimap\] The file at pack.public-url/.test(s.since(r.m)));
+  check('The warning is a WARN line, not an error', /WARN\]: \[BlueMapMini\] The file at pack.public-url/.test(s.since(r.m)));
   check('The server keeps running', s.proc && s.proc.exitCode === null);
 
   section(`${label}: the address follows a rebuilt pack`);
@@ -111,7 +111,7 @@ async function join(name) {
   const before = requests.length;
   r = await reload(); await sleep(3000);
   check('No download when verify-public-url is false', requests.length === before, requests.slice(before).join(' '));
-  m = s.mark(); s.cmd('blueminimap debug');
+  m = s.mark(); s.cmd('bluemapmini debug');
   dbg = await s.waitLog(/public-url ([^\n]*)/, 5000, m);
   check('Debug says the check is off', dbg && dbg[1].startsWith('check turned off'), dbg && dbg[1]);
   setPack({ 'pack.verify-public-url': true });
@@ -153,8 +153,8 @@ async function join(name) {
   setPack({ 'pack.public-url': '' });
   r = await reload();
   const bot4 = await join('PackD');
-  check('An empty public-url still uses the built-in host', bot4.pushes[0] && bot4.pushes[0].url.includes(`:${packPort}/blueminimap-`) && bot4.downloadStatus === 200, bot4.pushes[0] && bot4.pushes[0].url);
-  m = s.mark(); s.cmd('blueminimap debug');
+  check('An empty public-url still uses the built-in host', bot4.pushes[0] && bot4.pushes[0].url.includes(`:${packPort}/bluemapmini-`) && bot4.downloadStatus === 200, bot4.pushes[0] && bot4.pushes[0].url);
+  m = s.mark(); s.cmd('bluemapmini debug');
   dbg = await s.waitLog(/public-url ([^\n]*)/, 5000, m);
   check('Debug says public-url is not used', dbg && dbg[1].startsWith('not used'), dbg && dbg[1]);
   await bot4.cleanQuit();

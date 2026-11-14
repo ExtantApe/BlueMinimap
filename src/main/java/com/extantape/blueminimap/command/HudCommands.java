@@ -1,6 +1,6 @@
 package com.extantape.blueminimap.command;
 
-import com.extantape.blueminimap.BlueMinimapPlugin;
+import com.extantape.blueminimap.BlueMapMiniPlugin;
 import com.extantape.blueminimap.config.HudConfig;
 import com.extantape.blueminimap.hud.HudManager;
 import com.extantape.blueminimap.hud.HudSession;
@@ -32,19 +32,20 @@ import java.util.function.BiConsumer;
 
 /** Registers /map, /hud and /blueminimap, backing off to the next name when one is already taken. */
 public final class HudCommands {
-    private final BlueMinimapPlugin plugin;
+    private final BlueMapMiniPlugin plugin;
     /** Names chosen at startup. Data pack reloads rebuild the tree and must not back off from themselves. */
     private String claimedMap;
     private String claimedHud;
 
-    public HudCommands(BlueMinimapPlugin plugin) {
+    public HudCommands(BlueMapMiniPlugin plugin) {
         this.plugin = plugin;
     }
 
     public void register(Commands commands, HudConfig config) {
-        commands.register(adminTree("blueminimap").build(), "BlueMinimap help and admin commands", List.of());
-        // The old name, for one release (0.2.x) after the rename from BlueMapHUD. Logged at startup.
-        commands.register(adminTree("bmhud").build(), "Old name for /blueminimap. Goes in the next release.", List.of());
+        commands.register(adminTree("bluemapmini").build(), "BlueMapMini help and admin commands", List.of());
+        // The old names: /blueminimap (0.2.x, D194) and /bmhud (BlueMapHUD). Both go in the next release.
+        commands.register(adminTree("blueminimap").build(), "Old name for /bluemapmini. Goes in the next release.", List.of());
+        commands.register(adminTree("bmhud").build(), "Old name for /bluemapmini. Goes in the next release.", List.of());
         registerShortNames(commands, config);
     }
 
@@ -55,7 +56,7 @@ public final class HudCommands {
                 .then(hudTree(Commands.literal("hud")))
                 .then(Commands.literal("reload").requires(HudCommands::isAdmin).executes(ctx -> {
                     plugin.reload();
-                    return reply(ctx.getSource().getSender(), "BlueMinimap reloaded. Command names change after a restart.");
+                    return reply(ctx.getSource().getSender(), "BlueMapMini reloaded. Command names change after a restart.");
                 }))
                 .then(Commands.literal("debug").requires(HudCommands::isAdmin)
                         .executes(ctx -> reply(ctx.getSource().getSender(), plugin.debugLine()))
@@ -73,12 +74,12 @@ public final class HudCommands {
         claimedMap = claim(commands, claimedMap != null ? List.of(claimedMap) : config.commands().mapNames(), "Open the fullscreen map", true, firstTime);
         claimedHud = claim(commands, claimedHud != null ? List.of(claimedHud) : config.commands().hudNames(), "Control the minimap", false, firstTime);
         // Namespaced names always exist, so a taken short name never locks anyone out.
-        addNamespaced(commands, "map", claimedMap, mapTree(Commands.literal("blueminimap:map")));
-        addNamespaced(commands, "hud", claimedHud, hudTree(Commands.literal("blueminimap:hud")));
+        addNamespaced(commands, "map", claimedMap, mapTree(Commands.literal("bluemapmini:map")));
+        addNamespaced(commands, "hud", claimedHud, hudTree(Commands.literal("bluemapmini:hud")));
         addNamespaced(commands, "map", claimedMap, mapTree(Commands.literal("bluemaphud:map"))); // old names, 0.2.x only
         addNamespaced(commands, "hud", claimedHud, hudTree(Commands.literal("bluemaphud:hud")));
-        plugin.getLogger().info("/bmhud, /bluemaphud:map and /bluemaphud:hud are the old names for /blueminimap, /blueminimap:map and /blueminimap:hud. They still work in 0.2.x but go in the next release.");
-        plugin.getLogger().info("Commands: fullscreen map is " + describe(claimedMap, "/blueminimap map") + ", minimap is " + describe(claimedHud, "/blueminimap hud") + ".");
+        plugin.getLogger().info("/bmhud, /bluemaphud:map and /bluemaphud:hud are the old names for /blueminimap, /bluemapmini:map and /bluemapmini:hud. They still work in 0.2.x but go in the next release.");
+        plugin.getLogger().info("Commands: fullscreen map is " + describe(claimedMap, "/bluemapmini map") + ", minimap is " + describe(claimedHud, "/bluemapmini hud") + ".");
     }
 
     private String claim(Commands commands, List<String> names, String description, boolean isMap, boolean checkLegacy) {
@@ -107,11 +108,11 @@ public final class HudCommands {
     }
 
     private static boolean isAdmin(CommandSourceStack source) {
-        return com.extantape.blueminimap.Perms.has(source.getSender(), "blueminimap.admin");
+        return com.extantape.blueminimap.Perms.has(source.getSender(), "bluemapmini.admin");
     }
 
     private LiteralArgumentBuilder<CommandSourceStack> mapTree(LiteralArgumentBuilder<CommandSourceStack> root) {
-        return root.requires(source -> com.extantape.blueminimap.Perms.has(source.getSender(), "blueminimap.fullscreen"))
+        return root.requires(source -> com.extantape.blueminimap.Perms.has(source.getSender(), "bluemapmini.fullscreen"))
                 .executes(player((p, s) -> plugin.toggleFullscreen(p)))
                 .then(Commands.literal("zoom").then(Commands.argument("level", StringArgumentType.word())
                         .suggests((ctx, builder) -> suggestZoom(builder))
@@ -128,7 +129,7 @@ public final class HudCommands {
     }
 
     private LiteralArgumentBuilder<CommandSourceStack> hudTree(LiteralArgumentBuilder<CommandSourceStack> root) {
-        return root.requires(source -> com.extantape.blueminimap.Perms.has(source.getSender(), "blueminimap.use"))
+        return root.requires(source -> com.extantape.blueminimap.Perms.has(source.getSender(), "bluemapmini.use"))
                 .executes(player((p, s) -> setEnabled(p, s, !s.settings().enabled)))
                 .then(Commands.literal("on").executes(player((p, s) -> setEnabled(p, s, true))))
                 .then(Commands.literal("off").executes(player((p, s) -> setEnabled(p, s, false))))
@@ -265,7 +266,7 @@ public final class HudCommands {
             boolean mine = i == current;
             Component name = Component.text(theme.name(), mine ? NamedTextColor.WHITE : NamedTextColor.AQUA)
                     .decoration(TextDecoration.UNDERLINED, !mine)
-                    .clickEvent(ClickEvent.runCommand("/blueminimap:hud theme " + theme.id()))
+                    .clickEvent(ClickEvent.runCommand("/bluemapmini:hud theme " + theme.id()))
                     .hoverEvent(HoverEvent.showText(Component.text(mine ? "Your theme" : "Switch to " + theme.name())));
             line = line.append(name).append(Component.text(mine ? " (yours)" : "", NamedTextColor.GRAY))
                     .append(Component.text(i + 1 < themes.size() ? ", " : "", NamedTextColor.GRAY));
@@ -359,12 +360,12 @@ public final class HudCommands {
 
     private int help(CommandSender sender) {
         HudManager hud = plugin.hud();
-        sender.sendMessage(Component.text("BlueMinimap", NamedTextColor.AQUA));
+        sender.sendMessage(Component.text("BlueMapMini", NamedTextColor.AQUA));
         sender.sendMessage(Component.text("Fullscreen map: toggle, or zoom <n|in|out>. Sneak + F also opens it."));
         sender.sendMessage(Component.text("Minimap: on, off, mode map or coords, zoom, size, offset, corner, theme, hide and show (coords, players, markers, clock, shares)."));
         sender.sendMessage(Component.text("Share your coordinates: /hud share, /hud share <names> or /hud share everyone."));
-        if (com.extantape.blueminimap.Perms.has(sender, "blueminimap.admin")) {
-            sender.sendMessage(Component.text("Admin: /blueminimap reload, debug, debug dump, debug pattern, pack export."));
+        if (com.extantape.blueminimap.Perms.has(sender, "bluemapmini.admin")) {
+            sender.sendMessage(Component.text("Admin: /bluemapmini reload, debug, debug dump, debug pattern, pack export."));
             sender.sendMessage(Component.text(hud.debugLine()));
         }
         return Command.SINGLE_SUCCESS;

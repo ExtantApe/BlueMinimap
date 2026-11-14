@@ -28,7 +28,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Generates the resource pack in memory. Everything lives under the blueminimap namespace, apart from
+ * Generates the resource pack in memory. Everything lives under the bluemapmini namespace, apart from
  * the optional transparent boss bar textures. No shaders are involved.
  */
 public final class PackBuilder {
@@ -67,7 +67,7 @@ public final class PackBuilder {
 
     private static byte[] packMeta() {
         JsonObject pack = new JsonObject();
-        pack.addProperty("description", "BlueMinimap minimap");
+        pack.addProperty("description", "BlueMapMini minimap");
         pack.addProperty("min_format", MIN_FORMAT);
         pack.addProperty("max_format", MAX_FORMAT);
         JsonObject root = new JsonObject();
@@ -81,18 +81,18 @@ public final class PackBuilder {
         int iconCells = FontLayout.paddedCells(layout.maxIconAscent(), 1, HudIcon.SIZE);
         int textCells = FontLayout.paddedCells(layout.maxTextAscent(), 1, TinyFont.HEIGHT);
 
-        files.put("assets/blueminimap/textures/font/" + name + "_runs.png", png(runSheet(runCells)));
-        files.put("assets/blueminimap/textures/font/" + name + "_icons.png", png(iconSheet(icons, iconCells)));
-        files.put("assets/blueminimap/textures/font/" + name + "_text.png", png(textSheet(textCells)));
+        files.put("assets/bluemapmini/textures/font/" + name + "_runs.png", png(runSheet(runCells)));
+        files.put("assets/bluemapmini/textures/font/" + name + "_icons.png", png(iconSheet(icons, iconCells)));
+        files.put("assets/bluemapmini/textures/font/" + name + "_text.png", png(textSheet(textCells)));
         int readoutCells = FontLayout.paddedCells(layout.maxReadoutAscent(), 1, ReadoutFont.HEIGHT);
         int plateCells = FontLayout.paddedCells(layout.maxPlateAscent(), 1, FontLayout.PLATE_HEIGHT);
-        files.put("assets/blueminimap/textures/font/" + name + "_readout.png", png(readoutSheet(readoutCells)));
+        files.put("assets/bluemapmini/textures/font/" + name + "_readout.png", png(readoutSheet(readoutCells)));
         // One plate sheet for each opacity the themes use. The colour comes from the frame.
         for (int v = 0; v < themes.plateOpacities().size(); v++) {
-            files.put("assets/blueminimap/textures/font/" + name + "_plate" + v + ".png", png(plateSheet(plateCells, themes.plateOpacities().get(v))));
+            files.put("assets/bluemapmini/textures/font/" + name + "_plate" + v + ".png", png(plateSheet(plateCells, themes.plateOpacities().get(v))));
         }
         int clockCells = FontLayout.paddedCells(layout.maxClockAscent(), 1, Theme.CLOCK_SIZE);
-        files.put("assets/blueminimap/textures/font/" + name + "_clock.png", png(clockSheet(themes, clockCells)));
+        files.put("assets/bluemapmini/textures/font/" + name + "_clock.png", png(clockSheet(themes, clockCells)));
 
         JsonArray providers = new JsonArray();
         providers.add(spaceProvider());
@@ -123,7 +123,7 @@ public final class PackBuilder {
         }
         JsonObject font = new JsonObject();
         font.add("providers", providers);
-        files.put("assets/blueminimap/font/" + name + ".json", GSON.toJson(font).getBytes(StandardCharsets.UTF_8));
+        files.put("assets/bluemapmini/font/" + name + ".json", GSON.toJson(font).getBytes(StandardCharsets.UTF_8));
     }
 
     private static JsonObject spaceProvider() {
@@ -141,7 +141,7 @@ public final class PackBuilder {
     private static JsonObject bitmap(String file, int height, int ascent, String[] chars) {
         JsonObject provider = new JsonObject();
         provider.addProperty("type", "bitmap");
-        provider.addProperty("file", "blueminimap:font/" + file + ".png");
+        provider.addProperty("file", "bluemapmini:font/" + file + ".png");
         provider.addProperty("height", height);
         provider.addProperty("ascent", ascent);
         JsonArray rows = new JsonArray();

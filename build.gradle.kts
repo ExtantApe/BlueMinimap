@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "com.extantape"
-version = "0.2.1"
+version = "0.3.0"
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(25))
@@ -52,6 +52,6 @@ tasks.test {
 }
 
 tasks.jar {
-    archiveBaseName.set("BlueMinimap")
+    archiveBaseName.set("BlueMapMini")
     from("LICENSE")
 }

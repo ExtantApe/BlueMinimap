@@ -1,9 +1,12 @@
-name: BlueMinimap
+name: BlueMapMini
 version: '${version}'
-main: com.extantape.blueminimap.BlueMinimapPlugin
+main: com.extantape.blueminimap.BlueMapMiniPlugin
+# Answers to its old name too, for 0.3.x, so other plugins that look for BlueMinimap (HouseRules) still find it.
+provides:
+  - BlueMinimap
 api-version: '26.1'
 description: A BlueMap minimap and coordinates HUD, with a fullscreen map, drawn with a resource pack font.
-website: https://github.com/ExtantApe/BlueMinimap
+website: https://github.com/ExtantApe/BlueMapMini
 # Commands are registered with Brigadier in code, so there is no commands section.
 dependencies:
   server:
@@ -18,39 +21,57 @@ dependencies:
       required: false
       join-classpath: true
 permissions:
-  blueminimap.use:
+  bluemapmini.use:
     description: See and control the minimap.
     default: true
-  blueminimap.fullscreen:
+  bluemapmini.fullscreen:
     description: Open the fullscreen map.
     default: true
-  blueminimap.seeplayers:
+  bluemapmini.seeplayers:
     description: See other players on the map.
     default: true
-  blueminimap.share.send:
+  bluemapmini.share.send:
     description: Share your coordinates with /hud share.
     default: true
-  blueminimap.share.receive:
+  bluemapmini.share.receive:
     description: Receive coordinates other players share.
     default: true
+  bluemapmini.admin:
+    description: Use /bluemapmini reload, debug and pack commands.
+    default: op
+  blueminimap.use:
+    description: The name for bluemapmini.use in 0.2.x, before the rename to BlueMapMini (D194). Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
+    default: true
+  blueminimap.fullscreen:
+    description: The name for bluemapmini.fullscreen in 0.2.x, before the rename to BlueMapMini (D194). Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
+    default: true
+  blueminimap.seeplayers:
+    description: The name for bluemapmini.seeplayers in 0.2.x, before the rename to BlueMapMini (D194). Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
+    default: true
+  blueminimap.share.send:
+    description: The name for bluemapmini.share.send in 0.2.x, before the rename to BlueMapMini (D194). Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
+    default: true
+  blueminimap.share.receive:
+    description: The name for bluemapmini.share.receive in 0.2.x, before the rename to BlueMapMini (D194). Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
+    default: true
   blueminimap.admin:
-    description: Use /blueminimap reload, debug and pack commands.
+    description: The name for bluemapmini.admin in 0.2.x, before the rename to BlueMapMini (D194). Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
     default: op
   bluemaphud.use:
-    description: The old name for blueminimap.use, from before the rename. Still respected in 0.2.x (a "no" on either name wins for nodes that are on by default) and removed in the next release.
+    description: The 0.1.x name for bluemapmini.use, from before the rename. Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
     default: true
   bluemaphud.fullscreen:
-    description: The old name for blueminimap.fullscreen, from before the rename. Still respected in 0.2.x (a "no" on either name wins for nodes that are on by default) and removed in the next release.
+    description: The 0.1.x name for bluemapmini.fullscreen, from before the rename. Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
     default: true
   bluemaphud.seeplayers:
-    description: The old name for blueminimap.seeplayers, from before the rename. Still respected in 0.2.x (a "no" on either name wins for nodes that are on by default) and removed in the next release.
+    description: The 0.1.x name for bluemapmini.seeplayers, from before the rename. Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
     default: true
   bluemaphud.share.send:
-    description: The old name for blueminimap.share.send, from before the rename. Still respected in 0.2.x (a "no" on either name wins for nodes that are on by default) and removed in the next release.
+    description: The 0.1.x name for bluemapmini.share.send, from before the rename. Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
     default: true
   bluemaphud.share.receive:
-    description: The old name for blueminimap.share.receive, from before the rename. Still respected in 0.2.x (a "no" on either name wins for nodes that are on by default) and removed in the next release.
+    description: The 0.1.x name for bluemapmini.share.receive, from before the rename. Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
     default: true
   bluemaphud.admin:
-    description: The old name for blueminimap.admin, from before the rename. Still respected in 0.2.x (a "no" on either name wins for nodes that are on by default) and removed in the next release.
+    description: The 0.1.x name for bluemapmini.admin, from before the rename. Still respected in 0.3.x (a "no" on any name wins for nodes that are on by default) and removed in the next release.
     default: op

@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.stream.Stream;
 
-/** Carries a server's files over from the old plugin folder after the rename from BlueMapHUD (2026-11-09). */
+/** Carries a server's files over from the old plugin folder after a rename: from BlueMinimap (D194, 2026-11-14) or from BlueMapHUD (2026-11-09). */
 final class Migration {
     private Migration() {}
 
@@ -33,10 +33,10 @@ final class Migration {
             }
             Files.move(tmp, now, StandardCopyOption.ATOMIC_MOVE);
             return "Copied plugins/" + old.getFileName() + " to plugins/" + now.getFileName()
-                    + " (BlueMapHUD is now called BlueMinimap). The old folder was left untouched; delete it once you're happy.";
+                    + " (" + old.getFileName() + " is now called BlueMapMini). The old folder was left untouched; delete it once you're happy.";
         } catch (IOException | UncheckedIOException e) {
             return "Couldn't copy plugins/" + old.getFileName() + " to plugins/" + now.getFileName() + ": " + e.getMessage()
-                    + ". Copy it by hand while the server is stopped, or BlueMinimap starts with a fresh config.";
+                    + ". Copy it by hand while the server is stopped, or BlueMapMini starts with a fresh config.";
         }
     }
 

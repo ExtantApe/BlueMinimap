@@ -26,7 +26,7 @@ if [ "${BMH_ACCEPT_EULA:-}" != "1" ]; then
 fi
 
 PAPER=paper-$VERSION.jar
-HUD_JAR=$(ls "$REPO"/build/libs/BlueMinimap-*.jar 2>/dev/null | head -1)
+HUD_JAR=$(ls "$REPO"/build/libs/BlueMapMini-*.jar 2>/dev/null | head -1)
 HELPER_JAR=$REPO/test/live/helper/build/libs/LiveTestHelper.jar
 CONFLICT_JAR=$REPO/test/live/conflict/build/libs/LiveTestConflict.jar
 missing=0
@@ -49,7 +49,7 @@ trap remove_server EXIT
 remove_server
 
 echo "== Building a throwaway Paper $VERSION server in $SERVER"
-mkdir -p "$SERVER/plugins/BlueMinimap"
+mkdir -p "$SERVER/plugins/BlueMapMini"
 echo "eula=true" > "$SERVER/eula.txt"
 cat > "$SERVER/server.properties" <<EOF
 server-ip=127.0.0.1
@@ -62,15 +62,15 @@ spawn-protection=0
 level-seed=4242
 view-distance=6
 simulation-distance=6
-motd=BlueMinimap throwaway test server
+motd=BlueMapMini throwaway test server
 EOF
 cp "$WORK/bluemap.jar" "$SERVER/plugins/BlueMap.jar"
 cp "$WORK/ViaVersion.jar" "$WORK/ViaBackwards.jar" "$SERVER/plugins/"
 cp "$HELPER_JAR" "$SERVER/plugins/"
-cp "$HUD_JAR" "$SERVER/plugins/BlueMinimap.jar"
+cp "$HUD_JAR" "$SERVER/plugins/BlueMapMini.jar"
 # Set the ports before the first start, so the defaults never clash with another server on this machine.
 sed -e "s/^  port: 8164$/  port: $PACK_PORT/" -e "s#http://127.0.0.1:8100#http://127.0.0.1:$WEB_PORT#" \
-  "$REPO/src/main/resources/config.yml" > "$SERVER/plugins/BlueMinimap/config.yml"
+  "$REPO/src/main/resources/config.yml" > "$SERVER/plugins/BlueMapMini/config.yml"
 
 cd "$HERE"
 node firstboot.js "$NAME" "$PAPER" "$PORT" > "$WORK/$NAME-boot.log" 2>&1 || { echo "First start failed:"; tail -5 "$WORK/$NAME-boot.log"; exit 1; }

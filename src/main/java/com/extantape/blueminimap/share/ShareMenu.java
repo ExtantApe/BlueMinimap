@@ -120,9 +120,9 @@ public final class ShareMenu {
     /** One line per person to click, and one for everyone. */
     private static void chatList(Player sender, List<Player> candidates) {
         sender.sendMessage(Component.text("Share your coordinates with:", NamedTextColor.GRAY));
-        sender.sendMessage(link("Everyone here (" + candidates.size() + ")", "/blueminimap:hud share everyone"));
+        sender.sendMessage(link("Everyone here (" + candidates.size() + ")", "/bluemapmini:hud share everyone"));
         for (Player player : candidates.subList(0, Math.min(MAX_LISTED, candidates.size()))) {
-            sender.sendMessage(link(player.getName(), "/blueminimap:hud share " + player.getName()));
+            sender.sendMessage(link(player.getName(), "/bluemapmini:hud share " + player.getName()));
         }
     }
 

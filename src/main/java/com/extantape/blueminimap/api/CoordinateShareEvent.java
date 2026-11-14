@@ -11,10 +11,10 @@ import java.util.Set;
 /**
  * Fired on the main thread just before a player's coordinates are shared, so that another plugin, such as a
  * server's chat rules, can decide who may receive them. Remove recipients to narrow the share, or cancel it
- * to send nothing. Players who turned shares off, or lack {@code blueminimap.share.receive}, are already gone.
+ * to send nothing. Players who turned shares off, or lack {@code bluemapmini.share.receive}, are already gone.
  *
  * <p>When {@code share.candidates} is {@code all-online}, the recipients can include players in other
- * worlds, and BlueMinimap only does that while at least one plugin listens to this event.
+ * worlds, and BlueMapMini only does that while at least one plugin listens to this event.
  */
 public final class CoordinateShareEvent extends Event implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();

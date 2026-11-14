@@ -46,7 +46,7 @@ public final class HudManager {
     private final Map<String, String> worldMaps = new HashMap<>();
     private final Map<UUID, Boolean> bedrock = new ConcurrentHashMap<>();
     private final ExecutorService builders = Executors.newFixedThreadPool(2, runnable -> {
-        Thread thread = new Thread(runnable, "BlueMinimap-build");
+        Thread thread = new Thread(runnable, "BlueMapMini-build");
         thread.setDaemon(true);
         thread.setPriority(Thread.NORM_PRIORITY - 1);
         return thread;
@@ -183,7 +183,7 @@ public final class HudManager {
 
             String mapId = mapFor(player.getWorld());
             boolean hasMap = !mapId.isEmpty() || session.pattern;
-            boolean canFull = hasMap && session.fullscreen && com.extantape.blueminimap.Perms.has(player, "blueminimap.fullscreen") && config.fullscreen().enabled();
+            boolean canFull = hasMap && session.fullscreen && com.extantape.blueminimap.Perms.has(player, "bluemapmini.fullscreen") && config.fullscreen().enabled();
             if (!shouldShow(player, session, hasMap, canFull)) {
                 hide(player, session);
                 continue;
@@ -200,7 +200,7 @@ public final class HudManager {
         boolean coordsOnly = session.settings.coordsOnly && !session.pattern;
         if (!hasMap && !coordsOnly) return false; // A dimension BlueMap doesn't map. Coordinates don't need one.
         if (isBedrock(player) || !packs.ready(player)) return false;
-        if (!com.extantape.blueminimap.Perms.has(player, "blueminimap.use")) return false;
+        if (!com.extantape.blueminimap.Perms.has(player, "bluemapmini.use")) return false;
         if (canFull) return true; // Fullscreen is an explicit request, and it works while the minimap is off.
         if (!session.settings.enabled) return false;
         if (session.fullscreen && config.hud().hideWhileFullscreen() && !coordsOnly) return false;
@@ -253,7 +253,7 @@ public final class HudManager {
     }
 
     private int[] visiblePlayers(Player viewer, HudSession session, Location at) {
-        if (!session.settings.showPlayers || !com.extantape.blueminimap.Perms.has(viewer, "blueminimap.seeplayers")) return new int[0];
+        if (!session.settings.showPlayers || !com.extantape.blueminimap.Perms.has(viewer, "bluemapmini.seeplayers")) return new int[0];
         HudConfig.Players rules = config.players();
         BlueMapAPI api = rules.hideBlueMapHidden() ? BlueMapAPI.getInstance().orElse(null) : null;
         double radiusSquared = (double) rules.radius() * rules.radius();

@@ -94,7 +94,7 @@ class RenderTest {
         for (String path : client.files.keySet()) {
             assertFalse(path.contains("shaders"), path);
             assertTrue(path.equals("pack.mcmeta")
-                    || path.startsWith("assets/blueminimap/")
+                    || path.startsWith("assets/bluemapmini/")
                     || path.startsWith("assets/minecraft/textures/gui/sprites/boss_bar/pink_"), path);
         }
         JsonObject pack = JsonParser.parseString(new String(client.files.get("pack.mcmeta"), StandardCharsets.UTF_8))
@@ -189,7 +189,7 @@ class RenderTest {
         frame.drawGrid(new int[16]);
         Component component = frame.finish();
         assertEquals("hud", component.style().font().value());
-        assertEquals("blueminimap", component.style().font().namespace());
+        assertEquals("bluemapmini", component.style().font().namespace());
         assertEquals(ShadowColor.none(), component.style().shadowColor());
     }
 

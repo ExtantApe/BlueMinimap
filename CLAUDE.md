@@ -1,4 +1,4 @@
-# BlueMinimap
+# BlueMapMini
 
 Registered in the owner's ops process (`~/Code/ops`). Area: `minecraft-plugins` (lead: Minecraft: Plugins Lead). Added 2026-11-09 from the ops starter kit; the repo itself dates from 2026-11-07 (as BlueMapHUD).
 

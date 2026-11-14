@@ -1,6 +1,6 @@
 # Live tests
 
-These run BlueMinimap on a real Paper server with real BlueMap tiles, and drive it with a protocol bot. Every frame the bot receives is decoded and compared cell by cell with BlueMap's tile files on disk. The unit tests in `src/test` cover the rendering maths; these cover everything that needs a server.
+These run BlueMapMini on a real Paper server with real BlueMap tiles, and drive it with a protocol bot. Every frame the bot receives is decoded and compared cell by cell with BlueMap's tile files on disk. The unit tests in `src/test` cover the rendering maths; these cover everything that needs a server.
 
 `run.sh` builds one throwaway server on 127.0.0.1, generates a small world with a fixed seed, has BlueMap render it, runs the tests you name, and deletes the server afterwards, including when a test fails. Only one server runs at a time.
 
@@ -48,10 +48,10 @@ BMH_ACCEPT_EULA=1 test/live/run.sh 26.1.2 suite:coordsonly,onebar
 | `suite` | Everything players see: map accuracy, icons, the readout, the clock, themes, sharing, hiding rules, one boss bar, updates, pack handling, reloads, icons, action bar, HTTP source, bad data. Pick groups with `suite:<group,group>`, such as `suite:clock,themes,share`. | about 20 min |
 | `suite:clockrate` | Not part of `suite`: what the clock costs a player standing still, at steps of 1, 5 and 10 in-game minutes. | 4 min |
 | `load` | 20 moving bots for a minute: update size, build time and tick. Results depend on how busy the machine is. | 2 min |
-| `packurl` | `public-url` with `{sha1}`, the hosted-pack check, and `/blueminimap pack export`. | 3 min |
+| `packurl` | `public-url` with `{sha1}`, the hosted-pack check, and `/bluemapmini pack export`. | 3 min |
 | `storage` | BlueMap starting 8 times next to the plugin, and BlueMap on SQLite read through the HTTP source. | 6 min |
 | `backoff` | Another plugin owning `/map` and `/hud`, and getting them back once it's removed. | 2 min |
-| `houserules` | The real HouseRules with BlueMinimap: shares stay inside chat circles with HouseRules 0.2, sharing turns itself off with HouseRules 0.1.1, and works without HouseRules. Needs `BMH_HOUSERULES_JAR` and `BMH_HOUSERULES_OLD_JAR`; skipped otherwise. | 3 min |
+| `houserules` | The real HouseRules with BlueMapMini: shares stay inside chat circles with HouseRules 0.2, sharing turns itself off with HouseRules 0.1.1, and works without HouseRules. Needs `BMH_HOUSERULES_JAR` and `BMH_HOUSERULES_OLD_JAR`; skipped otherwise. | 3 min |
 
 Logs go to `test/live/work/server-<version>-<test>.log`. Each test prints a summary, with any failures and skipped checks.
 

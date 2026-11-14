@@ -51,7 +51,7 @@ public final class Helper extends JavaPlugin {
 
                     @Override
                     public String permission() {
-                        return "blueminimap.livetest";
+                        return "bluemapmini.livetest";
                     }
                 }));
     }

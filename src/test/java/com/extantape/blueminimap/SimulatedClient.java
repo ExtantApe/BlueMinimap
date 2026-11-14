@@ -35,8 +35,8 @@ final class SimulatedClient {
             for (ZipEntry entry; (entry = in.getNextEntry()) != null; ) files.put(entry.getName(), in.readAllBytes());
         }
         for (String path : files.keySet()) {
-            if (path.startsWith("assets/blueminimap/font/") && path.endsWith(".json")) {
-                String name = path.substring("assets/blueminimap/font/".length(), path.length() - 5);
+            if (path.startsWith("assets/bluemapmini/font/") && path.endsWith(".json")) {
+                String name = path.substring("assets/bluemapmini/font/".length(), path.length() - 5);
                 fonts.put(name, loadFont(new String(files.get(path), StandardCharsets.UTF_8)));
             }
         }
@@ -58,7 +58,7 @@ final class SimulatedClient {
             int height = provider.get("height").getAsInt();
             int ascent = provider.get("ascent").getAsInt();
             if (ascent > height) throw new AssertionError("Client rejects ascent " + ascent + " > height " + height);
-            String file = "assets/blueminimap/textures/" + provider.get("file").getAsString().substring("blueminimap:".length());
+            String file = "assets/bluemapmini/textures/" + provider.get("file").getAsString().substring("bluemapmini:".length());
             byte[] png = files.get(file);
             if (png == null) throw new AssertionError("Missing texture " + file);
             BufferedImage sheet = sheets.computeIfAbsent(file, f -> {

@@ -46,7 +46,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
-public final class BlueMinimapPlugin extends JavaPlugin implements Listener {
+public final class BlueMapMiniPlugin extends JavaPlugin implements Listener {
     /** Runs after other plugins, so the command name chains can see what they took. */
     private static final int COMMANDS_PRIORITY = 1000;
     private static final long PACK_SEND_DELAY_TICKS = 20;
@@ -67,10 +67,13 @@ public final class BlueMinimapPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         Perms.logTo(line -> getLogger().warning(line));
         java.nio.file.Path folder = getDataFolder().toPath();
-        String moved = Migration.copyIfMissing(folder.resolveSibling("BlueMapHUD"), folder);
+        // Renamed from BlueMinimap (D194, 0.3.0), and before that from BlueMapHUD: bring the newest old folder across once.
+        String moved = Migration.copyIfMissing(folder.resolveSibling("BlueMinimap"), folder);
+        if (moved == null) moved = Migration.copyIfMissing(folder.resolveSibling("BlueMapHUD"), folder);
         if (moved != null) {
             getLogger().warning(moved);
-            try { // The old pack file would only confuse whoever hosts the pack; the new one is built below.
+            try { // The old pack files would only confuse whoever hosts the pack; the new one is built below.
+                java.nio.file.Files.deleteIfExists(folder.resolve("pack/blueminimap-pack.zip"));
                 java.nio.file.Files.deleteIfExists(folder.resolve("pack/bluemaphud-pack.zip"));
             } catch (java.io.IOException e) {
                 getLogger().warning("Couldn't remove the copied old pack file: " + e.getMessage());
@@ -161,7 +164,7 @@ public final class BlueMinimapPlugin extends JavaPlugin implements Listener {
     /** Coordinates need the pack but not a map, so this is all that can stop them appearing. */
     public void explainIfNoPack(Player player) {
         if (!packs.ready(player)) {
-            player.sendMessage(Component.text("Your client hasn't loaded the BlueMinimap resource pack yet.", NamedTextColor.YELLOW));
+            player.sendMessage(Component.text("Your client hasn't loaded the BlueMapMini resource pack yet.", NamedTextColor.YELLOW));
         }
     }
 
@@ -308,13 +311,13 @@ public final class BlueMinimapPlugin extends JavaPlugin implements Listener {
         if (!player.isSneaking() || hud.isBedrock(player)) return;
         HudSession session = hud.session(player);
 
-        if (config.hud().quickHideGesture() && player.getLocation().getPitch() >= LOOK_DOWN_PITCH && com.extantape.blueminimap.Perms.has(player, "blueminimap.use")) {
+        if (config.hud().quickHideGesture() && player.getLocation().getPitch() >= LOOK_DOWN_PITCH && com.extantape.blueminimap.Perms.has(player, "bluemapmini.use")) {
             event.setCancelled(true);
             session.settings().enabled = !session.settings().enabled;
             hud.saveSettings(player, session);
             return;
         }
-        if (config.fullscreen().sneakSwapToggle() && config.fullscreen().enabled() && com.extantape.blueminimap.Perms.has(player, "blueminimap.fullscreen")) {
+        if (config.fullscreen().sneakSwapToggle() && config.fullscreen().enabled() && com.extantape.blueminimap.Perms.has(player, "bluemapmini.fullscreen")) {
             event.setCancelled(true);
             toggleFullscreen(player);
         }
