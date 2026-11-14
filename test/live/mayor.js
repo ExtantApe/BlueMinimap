@@ -1,12 +1,12 @@
-// BlueMapMini with the real HouseRules: shares follow chat circles, and with a HouseRules too old to see BlueMapMini's
-// share event, sharing is off rather than unfiltered.
-// Usage: node houserules.js <dir> <jar> <port> <houseRulesJar> <oldHouseRulesJar>, <dir> and <jar> relative to the work folder.
+// BlueMapMini with the real Mayor: shares follow chat circles. Without Mayor, sharing is off by default rather than
+// unfiltered, and a server without chat rules can turn it on with share.require-mayor: false.
+// Usage: node mayor.js <dir> <jar> <port> <mayorJar>, <dir> and <jar> relative to the work folder.
 const { Server, Bot, check, section, summary, sleep, until } = require('./lib.js');
 const fs = require('fs');
-const [dir, jar, portS, newJar, oldJar] = process.argv.slice(2);
+const [dir, jar, portS, newJar] = process.argv.slice(2);
 const port = +portS;
 const s = new Server(dir, jar, port);
-const installed = s.path('plugins', 'HouseRules.jar');
+const installed = s.path('plugins', 'Mayor.jar');
 
 // Made-up circles. The overworld is circle-only, so only circles decide who hears whom there.
 const CONFIG = 'circles: [red, blue]\ncircle-only-worlds: [world]\n';
@@ -32,14 +32,14 @@ async function joinAll(names) {
 (async () => {
   let bots = {};
   try {
-    section('BlueMapMini with HouseRules 0.2: shares follow the circles');
+    section('BlueMapMini with Mayor 0.5: shares follow the circles');
     fs.copyFileSync(newJar, installed);
-    fs.mkdirSync(s.path('plugins', 'HouseRules'), { recursive: true });
-    fs.writeFileSync(s.path('plugins', 'HouseRules', 'config.yml'), CONFIG);
+    fs.mkdirSync(s.path('plugins', 'Mayor'), { recursive: true });
+    fs.writeFileSync(s.path('plugins', 'Mayor', 'config.yml'), CONFIG);
     await s.start(); await sleep(4000);
-    check('HouseRules found BlueMapMini\'s share event', /BlueMapMini found: coordinate shares follow the same rules as chat/.test(s.log));
+    check('Mayor found BlueMapMini\'s share event', /BlueMapMini found: coordinate shares follow the same rules as chat/.test(s.log));
     bots = await joinAll(['Tester', 'Alex', 'Blair', 'Casey']);
-    for (const [who, circle] of [['Tester', 'red'], ['Alex', 'red'], ['Blair', 'blue']]) s.cmd(`bmt perm ${who} houserules.circle.${circle} true`);
+    for (const [who, circle] of [['Tester', 'red'], ['Alex', 'red'], ['Blair', 'blue']]) s.cmd(`bmt perm ${who} mayor.circle.${circle} true`);
     await sleep(800);
     let marks = Object.fromEntries(Object.entries(bots).map(([n, b]) => [n, b.chat.length]));
     const sent = await say(bots.Tester, '/hud share everyone', /Sent your coordinates|weren't sent|can receive/);
@@ -53,33 +53,33 @@ async function joinAll(names) {
     for (const b of Object.values(bots)) await b.cleanQuit();
     await s.stop();
 
-    section('BlueMapMini with HouseRules 0.1.1: sharing is off, not unfiltered');
-    fs.copyFileSync(oldJar, installed);
-    await s.start(); await sleep(4000);
-    bots = await joinAll(['Tester', 'Alex', 'Blair']);
-    s.cmd('bmt perm Tester houserules.circle.red true'); s.cmd('bmt perm Alex houserules.circle.red true'); await sleep(800);
-    marks = Object.fromEntries(Object.entries(bots).map(([n, b]) => [n, b.chat.length]));
-    const mark = s.mark();
-    const off = await say(bots.Tester, '/hud share everyone', /Sent your coordinates|off on this server|can receive/);
-    await sleep(600);
-    check('The sender is told sharing is off', /Sharing coordinates is off on this server for now/.test(off || ''), off);
-    check('and nobody receives anything', !heard(bots.Alex, marks.Alex) && !heard(bots.Blair, marks.Blair));
-    check('The log tells the admin to update HouseRules', /HouseRules 0\.1\.1 can't see BlueMapMini's shares.*Update HouseRules to 0\.2\.0/.test(s.since(mark)));
-    for (const b of Object.values(bots)) await b.cleanQuit();
-    await s.stop();
-
-    section('BlueMapMini without HouseRules: sharing works');
+    section('BlueMapMini without Mayor, default settings: sharing is off, not unfiltered');
     fs.rmSync(installed, { force: true });
     await s.start(); await sleep(4000);
     bots = await joinAll(['Tester', 'Alex']);
-    const m = bots.Alex.chat.length;
+    let m = bots.Alex.chat.length;
+    let mark = s.mark();
+    const off = await say(bots.Tester, '/hud share everyone', /Sent your coordinates|off on this server|can receive/);
+    await sleep(600);
+    check('The sender is told sharing is off', /Sharing coordinates is off on this server for now/.test(off || ''), off);
+    check('and nobody receives anything', !heard(bots.Alex, m));
+    check("The log says Mayor isn't installed", /follows Mayor's chat rules and Mayor isn't installed/.test(s.since(mark)));
+    for (const b of Object.values(bots)) await b.cleanQuit();
+    await s.stop();
+
+    section('BlueMapMini without Mayor, require-mayor: false: sharing works');
+    const cfg = s.path('plugins', 'BlueMapMini', 'config.yml');
+    fs.writeFileSync(cfg, fs.readFileSync(cfg, 'utf8').replace('require-mayor: true', 'require-mayor: false'));
+    await s.start(); await sleep(4000);
+    bots = await joinAll(['Tester', 'Alex']);
+    m = bots.Alex.chat.length;
     const plain = await say(bots.Tester, '/hud share everyone', /Sent your coordinates|off on this server|can receive/);
     await sleep(600);
-    check('control: without HouseRules a share goes through', /Sent your coordinates/.test(plain || '') && heard(bots.Alex, m), plain);
+    check('A server without chat rules can share', /Sent your coordinates/.test(plain || '') && heard(bots.Alex, m), plain);
     for (const b of Object.values(bots)) await b.cleanQuit();
     await s.stop();
   } catch (e) {
-    check('houserules finished', false, e.stack?.slice(0, 400));
+    check('mayor finished', false, e.stack?.slice(0, 400));
     for (const b of Object.values(bots)) try { await b.cleanQuit(); } catch {}
     try { await s.stop(); } catch {}
   }

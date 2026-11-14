@@ -18,7 +18,8 @@ const liveBots = []; // Quit after each group, so a crash can't leave a duplicat
 /** The shipped config with this server's ports. The clock is off unless a group turns it on, so idle tests stay idle. */
 function baseConfig(edits = {}) {
   fs.copyFileSync(path.join(REPO, 'src/main/resources/config.yml'), CFG);
-  editYaml(CFG, { 'pack.port': packPort, 'pack.bind': '127.0.0.1', 'tiles.http-url': `http://127.0.0.1:${webPort}`, 'hud.clock.enabled': false, ...edits });
+  // These servers have no Mayor, so sharing is turned on without it; the check below covers the default.
+  editYaml(CFG, { 'pack.port': packPort, 'pack.bind': '127.0.0.1', 'tiles.http-url': `http://127.0.0.1:${webPort}`, 'hud.clock.enabled': false, 'share.require-mayor': false, ...edits });
 }
 async function reload(expectPush) {
   const m = s.mark(); s.cmd('bluemapmini reload');
@@ -29,7 +30,7 @@ async function reload(expectPush) {
  * glyph advances, or null when no client classpath is set. The client isn't started, only its classes.
  */
 function gameAdvances(packBytes) {
-  const classpath = process.env.BMH_CLIENT_CP;
+  const classpath = process.env.BMM_CLIENT_CP;
   if (!classpath) return null;
   const zip = path.join(ROOT, `fontcheck-${label}.zip`), out = path.join(ROOT, `fontcheck-${label}.json`);
   fs.writeFileSync(zip, packBytes);
@@ -225,6 +226,9 @@ const GROUPS = {
     baseConfig({ 'share.cooldown-seconds': 0, 'share.enabled': false }); await reload();
     const disabled = await chat(t, '/hud share Alex', /turned off|Sent/);
     check('share.enabled: false turns it off', /turned off on this server/.test(disabled || ''), disabled);
+    baseConfig({ 'share.cooldown-seconds': 0, 'share.require-mayor': true }); await reload();
+    const noMayor = await chat(t, '/hud share Alex', /off on this server|Sent/);
+    check('By default, with no Mayor installed, sharing stays off (fail closed)', /off on this server for now/.test(noMayor || ''), noMayor);
 
     baseConfig({ 'share.cooldown-seconds': 0 }); await reload();
     const dialogs = [];
@@ -497,7 +501,7 @@ const GROUPS = {
     else check("pack.bind 127.0.0.1: refused on this machine's network address", !(await reach(lan)), lan);
     const pk = packOf(b);
     const adv = gameAdvances(b.packBytes);
-    if (!adv) skip("This test's advances match the game's own font code", 'set BMH_CLIENT_CP to a Minecraft client classpath to run it');
+    if (!adv) skip("This test's advances match the game's own font code", 'set BMM_CLIENT_CP to a Minecraft client classpath to run it');
     else {
       let wrong = 0, n = 0;
       for (const [font, table] of Object.entries(adv)) for (const [c, a] of Object.entries(table)) { n++; if (pk.fonts[font].get(+c)?.advance !== a) wrong++; }

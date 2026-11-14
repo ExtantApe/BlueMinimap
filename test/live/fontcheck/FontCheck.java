@@ -17,7 +17,7 @@ import java.util.zip.*;
 
 /**
  * Feeds a resource pack through the game's own metadata and font loading code, without starting the game,
- * and writes each glyph's advance as JSON. Run by the live suite when BMH_CLIENT_CP is set:
+ * and writes each glyph's advance as JSON. Run by the live suite when BMM_CLIENT_CP is set:
  * {@code java -cp <client jar and libraries> FontCheck.java <pack.zip> <out.json>}
  */
 public class FontCheck {

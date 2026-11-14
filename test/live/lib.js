@@ -2,7 +2,7 @@
 // reading of BlueMap's tiles to compare frames against. See README.md in this folder.
 const path = require('path'), fs = require('fs'), zlib = require('zlib'), cp = require('child_process'), crypto = require('crypto');
 /** Holds the server jars, plugins and throwaway servers. Never committed. */
-const ROOT = path.resolve(process.env.BMH_LIVE_DIR || path.join(__dirname, 'work'));
+const ROOT = path.resolve(process.env.BMM_LIVE_DIR || path.join(__dirname, 'work'));
 /** The repository this kit lives in. */
 const REPO = path.resolve(__dirname, '..', '..');
 const mineflayer = require('mineflayer');

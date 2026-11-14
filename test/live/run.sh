@@ -9,19 +9,19 @@ set -euo pipefail
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$HERE/../.." && pwd)
-WORK=$(mkdir -p "${BMH_LIVE_DIR:-$HERE/work}" && cd "${BMH_LIVE_DIR:-$HERE/work}" && pwd)
-PORT=${BMH_PORT:-25693}
-PACK_PORT=${BMH_PACK_PORT:-8193}
-WEB_PORT=${BMH_WEB_PORT:-8123}
-HOST_PORT=${BMH_HOST_PORT:-8293}
+WORK=$(mkdir -p "${BMM_LIVE_DIR:-$HERE/work}" && cd "${BMM_LIVE_DIR:-$HERE/work}" && pwd)
+PORT=${BMM_PORT:-25693}
+PACK_PORT=${BMM_PACK_PORT:-8193}
+WEB_PORT=${BMM_WEB_PORT:-8123}
+HOST_PORT=${BMM_HOST_PORT:-8293}
 
 VERSION=${1:?Usage: run.sh <paper version> [suite|suite:<groups>|packurl|storage|load|backoff ...]}
 shift
 TESTS=("${@:-suite}")
 
-if [ "${BMH_ACCEPT_EULA:-}" != "1" ]; then
+if [ "${BMM_ACCEPT_EULA:-}" != "1" ]; then
   echo "This starts a Minecraft server and lets BlueMap download the Minecraft client's resources."
-  echo "Both mean accepting the Minecraft EULA (https://aka.ms/MinecraftEULA). Set BMH_ACCEPT_EULA=1 to accept it."
+  echo "Both mean accepting the Minecraft EULA (https://aka.ms/MinecraftEULA). Set BMM_ACCEPT_EULA=1 to accept it."
   exit 2
 fi
 
@@ -92,10 +92,10 @@ for test in "${TESTS[@]}"; do
     packurl) node packurl.js "$VERSION" "$NAME" "$PAPER" "$PORT" "$PACK_PORT" "$WEB_PORT" "$HOST_PORT" > "$log" 2>&1 || status=1 ;;
     storage) node storage.js "$NAME" "$PAPER" "$PORT" "$WEB_PORT" "$PACK_PORT" > "$log" 2>&1 || status=1 ;;
     backoff) node backoff.js "$NAME" "$PAPER" "$PORT" "$CONFLICT_JAR" > "$log" 2>&1 || status=1 ;;
-    houserules) # The real HouseRules, current and 0.1.1: BMH_HOUSERULES_JAR and BMH_HOUSERULES_OLD_JAR.
-      if [ -f "${BMH_HOUSERULES_JAR:-}" ] && [ -f "${BMH_HOUSERULES_OLD_JAR:-}" ]; then
-        node houserules.js "$NAME" "$PAPER" "$PORT" "$BMH_HOUSERULES_JAR" "$BMH_HOUSERULES_OLD_JAR" > "$log" 2>&1 || status=1
-      else echo "SKIP  houserules  [set BMH_HOUSERULES_JAR and BMH_HOUSERULES_OLD_JAR]" | tee "$log"; fi ;;
+    mayor) # The real Mayor, current and 0.1.1: BMM_MAYOR_JAR and BMM_MAYOR_OLD_JAR.
+      if [ -f "${BMM_MAYOR_JAR:-}" ] && [ -f "${BMM_MAYOR_OLD_JAR:-}" ]; then
+        node mayor.js "$NAME" "$PAPER" "$PORT" "$BMM_MAYOR_JAR" > "$log" 2>&1 || status=1
+      else echo "SKIP  mayor  [set BMM_MAYOR_JAR and BMM_MAYOR_OLD_JAR]" | tee "$log"; fi ;;
     *) echo "Unknown test: $test"; status=1; continue ;;
   esac
   grep -E "^(FAIL|SKIP)|^SUMMARY|CRASHED" "$log" || true

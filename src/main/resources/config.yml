@@ -137,3 +137,7 @@ share:
   cooldown-seconds: 30
   # Log each share to the console: who sent it, where, and who received it.
   log: true
+  # Shares only while Mayor 0.5.0 or newer is installed, so every share follows the same rules as chat. With true
+  # and no Mayor, /hud share stays off and the console says why. Set false only on a server without chat rules,
+  # where sharing to anyone in the world group is fine.
+  require-mayor: true

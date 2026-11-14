@@ -87,7 +87,7 @@ public final class ShareService {
     public String blocked(Player sender) {
         if (!config().enabled()) return "Sharing coordinates is turned off on this server.";
         if (!com.extantape.bluemapmini.Perms.has(sender, SEND)) return "You can't share your coordinates here.";
-        String guard = olderHouseRules();
+        String guard = olderMayor();
         if (guard != null) {
             plugin.getLogger().warning(guard);
             return "Sharing coordinates is off on this server for now. An admin has been told why.";
@@ -185,11 +185,14 @@ public final class ShareService {
     }
 
     /**
-     * HouseRules before 0.5.0 listens for a share event BlueMapMini doesn't send, so it wouldn't see shares and they'd
-     * skip its chat circles. Fail closed: no shares until HouseRules is 0.5.0 or newer.
+     * Shares follow Mayor's chat rules, and Mayor before 0.5.0 listens for a share event BlueMapMini doesn't send. So
+     * sharing is off (fail closed) unless Mayor 0.5.0 or newer is installed, or the server turned require-mayor off.
+     * The version is null when Mayor isn't installed.
      */
-    static String olderHouseRules(String version) {
-        if (version == null) return null;
+    static String olderMayor(String version, boolean requireMayor) {
+        if (version == null) return requireMayor
+                ? "Coordinate sharing is off because it follows Mayor's chat rules and Mayor isn't installed. Install Mayor 0.5.0 or newer, or set share.require-mayor: false on a server without chat rules."
+                : null;
         String[] p = version.split("[.-]");
         try {
             int major = Integer.parseInt(p[0]), minor = p.length > 1 ? Integer.parseInt(p[1]) : 0;
@@ -197,11 +200,12 @@ public final class ShareService {
         } catch (NumberFormatException e) {
             // Unreadable version: treat it as too old.
         }
-        return "Coordinate sharing is off because HouseRules " + version + " can't see BlueMapMini's shares, so they'd skip its chat circles. Update HouseRules to 0.5.0 or newer.";
+        return "Coordinate sharing is off because Mayor " + version + " can't see BlueMapMini's shares, so they'd skip its chat circles. Update Mayor to 0.5.0 or newer.";
     }
 
-    private String olderHouseRules() {
-        org.bukkit.plugin.Plugin houseRules = plugin.getServer().getPluginManager().getPlugin("HouseRules");
-        return houseRules == null ? null : olderHouseRules(houseRules.getPluginMeta().getVersion());
+    private String olderMayor() {
+        org.bukkit.plugin.Plugin mayor = plugin.getServer().getPluginManager().getPlugin("Mayor");
+        boolean on = mayor != null && mayor.isEnabled();
+        return olderMayor(on ? mayor.getPluginMeta().getVersion() : null, config().requireMayor());
     }
 }

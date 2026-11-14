@@ -27,7 +27,7 @@ public record HudConfig(
         ALL_ONLINE
     }
 
-    public record Share(boolean enabled, ShareScope candidates, int cooldownSeconds, boolean log) {}
+    public record Share(boolean enabled, ShareScope candidates, int cooldownSeconds, boolean log, boolean requireMayor) {}
 
     public record Tiles(String source, String webRoot, String httpUrl, int refreshMinutes,
                         int cacheChunks, Map<String, String> mapOverrides) {}
@@ -137,7 +137,8 @@ public record HudConfig(
                 c.getBoolean("share.enabled", true),
                 "all-online".equalsIgnoreCase(c.getString("share.candidates", "world-group")) ? ShareScope.ALL_ONLINE : ShareScope.WORLD_GROUP,
                 clamp(c.getInt("share.cooldown-seconds", 30), 0, 3600),
-                c.getBoolean("share.log", true));
+                c.getBoolean("share.log", true),
+                c.getBoolean("share.require-mayor", true));
 
         return new HudConfig(tiles, hud, commands, fullscreen, players, markers, pack, share);
     }
