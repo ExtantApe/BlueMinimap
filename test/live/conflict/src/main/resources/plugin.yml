@@ -2,7 +2,7 @@
 # tests can check that BlueMapMini backs off to other names. Never install it on a real server.
 name: LiveTestConflict
 version: '1'
-main: com.extantape.blueminimap.livetest.Conflict
+main: com.extantape.bluemapmini.livetest.Conflict
 api-version: '26.1'
 commands:
   map: {}

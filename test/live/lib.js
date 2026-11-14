@@ -146,7 +146,7 @@ class Pack {
     this.files = unzipAll(tmp); fs.unlinkSync(tmp);
     this.fonts = {};
     for (const [name, data] of Object.entries(this.files)) {
-      const m = name.match(/^assets\/blueminimap\/font\/(\w+)\.json$/);
+      const m = name.match(/^assets\/bluemapmini\/font\/(\w+)\.json$/);
       if (m) this.fonts[m[1]] = this.loadFont(JSON.parse(data.toString('utf8')));
     }
   }

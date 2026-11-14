@@ -190,16 +190,6 @@ const GROUPS = {
     const denied = await chat(t, '/hud share Alex', /can't share|Sent|Unknown/);
     check('Without bluemapmini.share.send the sender is told no', /can't share your coordinates/.test(denied || ''), denied);
     s.cmd('bmt perm Tester bluemapmini.share.send true');
-    // A server that turned sharing off under the old name (say, for a children's group) must stay off after the rename.
-    s.cmd('bmt perm Blair bluemaphud.share.receive false'); await sleep(300);
-    m = marks(); log = s.mark(); await chat(t, '/hud share everyone', /Sent your coordinates/); await sleep(500);
-    check('An old bluemaphud.share.receive false still stops shares arriving', !got(m).includes('Blair') && got(m).includes('Alex'), got(m).join(','));
-    check('and the log says to set the new name', /Blair has blueminimap\.share\.receive true but the old bluemaphud\.share\.receive false, so it's false/.test(s.since(log)));
-    s.cmd('bmt perm Blair bluemaphud.share.receive true');
-    s.cmd('bmt perm Tester bluemaphud.share.send false'); await sleep(300);
-    const oldDenied = await chat(t, '/hud share Alex', /can't share|Sent|Unknown/);
-    check('An old bluemaphud.share.send false still stops the sender', /can't share your coordinates/.test(oldDenied || ''), oldDenied);
-    s.cmd('bmt perm Tester bluemaphud.share.send true'); await sleep(300);
     s.cmd('bmt hidefrom Tester Alex on'); await sleep(300);
     const hidden = await chat(t, '/hud share Alex', /Nobody called|Sent/);
     check('A player hidden from the sender can\'t be named', /Nobody called Alex is online/.test(hidden || ''), hidden);
@@ -1191,7 +1181,7 @@ const GROUPS = {
   const bukkit = s.path('bukkit.yml');
   fs.writeFileSync(bukkit, fs.readFileSync(bukkit, 'utf8').replace(/connection-throttle: \d+/, 'connection-throttle: -1'));
   const spigot = s.path('spigot.yml'); // The tests send commands faster than a person, and must not be kicked for it.
-  fs.writeFileSync(spigot, fs.readFileSync(spigot, 'utf8').replace(/spam-exclusions:\n(\s*)- .*/, 'spam-exclusions:\n$1- /hud\n$1- /map\n$1- /blueminimap\n$1- /skill').replace('enable-spam-exclusions: false', 'enable-spam-exclusions: true'));
+  fs.writeFileSync(spigot, fs.readFileSync(spigot, 'utf8').replace(/spam-exclusions:\n(\s*)- .*/, 'spam-exclusions:\n$1- /hud\n$1- /map\n$1- /bluemapmini\n$1- /skill').replace('enable-spam-exclusions: false', 'enable-spam-exclusions: true'));
   await s.start(); await sleep(6000);
   s.cmd('op Tester'); s.cmd('whitelist off'); s.cmd('difficulty easy'); s.cmd('gamerule keep_inventory true');
   for (const c of ['execute in minecraft:overworld run forceload add -32 -32 32 32']) s.cmd(c);
@@ -1200,7 +1190,7 @@ const GROUPS = {
     const m = s.mark();
     try { await GROUPS[n](); } catch (e) { check(`Group ${n} finished`, false, e.stack?.slice(0, 400)); }
     for (const bot of liveBots.splice(0)) if (bot.ended === null) await bot.cleanQuit();
-    const hudErrors = s.errors(m).filter((l) => /extantape|\[BlueMapMini\]/.test(l) && !/icons must be|Ignoring|no resource pack|doesn't contain|Could not download pack.public-url \(http:\/\/127.0.0.1:\d+\/custom.zip\)|no theme called sparkles|Theme broken couldn't be loaded|Theme ocean is hard to read|FailDl didn't get the BlueMapMini pack|Blair has blueminimap\.share\.receive true but the old bluemaphud\.share\.receive false|Tester has blueminimap\.share\.send true but the old bluemaphud\.share\.send false/.test(l));
+    const hudErrors = s.errors(m).filter((l) => /extantape|\[BlueMapMini\]/.test(l) && !/icons must be|Ignoring|no resource pack|doesn't contain|Could not download pack.public-url \(http:\/\/127.0.0.1:\d+\/custom.zip\)|no theme called sparkles|Theme broken couldn't be loaded|Theme ocean is hard to read|FailDl didn't get the BlueMapMini pack/.test(l));
     check(`No BlueMapMini errors during ${n}`, hudErrors.length === 0, hudErrors[0]?.slice(0, 200) || '');
     const drops = s.since(m).split('\n').filter((l) => /lost connection: (?!Disconnected|This server needs|.*resource pack)/.test(l));
     check(`No unexpected disconnects during ${n}`, drops.length === 0, drops[0]?.slice(0, 160) || '');

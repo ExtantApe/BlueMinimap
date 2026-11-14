@@ -23,4 +23,4 @@ Owner decisions for BlueMapHUD, newest first.
 
 ## 2026-11-14
 
-- **Name (owner, D194):** BlueMinimap is renamed BlueMapMini, so it starts with BlueMap like BlueMapAuth and the other BlueMap add-ons. The owner chose "Rename to BlueMapMini (Recommended)". Released as 0.3.0. The Java package and the share event's class keep their names, and the plugin answers to BlueMinimap too, so HouseRules keeps filtering shares with no update. A "no" under any old permission name still wins, so a children's group stopped from sharing stays stopped.
+- **Name (owner, D194, D196):** the plugin is renamed BlueMapMini, so it starts with BlueMap like BlueMapAuth and the other BlueMap add-ons. Released as 0.3.0. The owner asked that no old names be kept, so the Java package, commands, permissions, pack ID, player settings key and folder all use the new name, with no aliases or copies. Sharing stays off until HouseRules is 0.5.0, which hooks the new share event, so shares can never skip chat circles.

@@ -4,7 +4,7 @@ BlueMapMini: a BlueMap minimap and coordinates HUD for Paper, rendered in game f
 
 It's an unofficial add-on for BlueMap and isn't affiliated with BlueMap's authors.
 
-**Status:** pre-release, version 0.3.0, renamed from BlueMinimap (see below). It has passed a full test suite on live Paper 26.1.2, 26.2 and 26.3 servers with real BlueMap tiles, using a protocol bot. It hasn't been seen in a real game client yet. See [Testing](#testing).
+**Status:** pre-release, version 0.3.0. It has passed a full test suite on live Paper 26.1.2, 26.2 and 26.3 servers with real BlueMap tiles, using a protocol bot. It hasn't been seen in a real game client yet. See [Testing](#testing).
 
 - Requires Paper 26.1 or newer, Java 25, and a BlueMap version that matches your server (see below). Java Edition only. Paper 1.21.11 and older aren't supported.
 - Works alongside other resource packs, because it never overrides a shader and only adds its own files.
@@ -24,25 +24,6 @@ These minimums come from BlueMap's release notes. Only BlueMap 5.29 was tested, 
 3. Start the server. Settings are in `plugins/BlueMapMini/config.yml`.
 
 If BlueMap stores its maps in SQL, set `tiles.source: http`.
-
-## Upgrading from BlueMinimap
-
-BlueMapMini was called BlueMinimap in 0.2.x, and renamed in 0.3.0 (D194) so its name starts with BlueMap like the other BlueMap add-ons. Players keep their HUD settings.
-
-- With the server stopped, swap `BlueMinimap-0.2.1.jar` for `BlueMapMini-0.3.0.jar`.
-- On first start, `plugins/BlueMinimap/` is copied to `plugins/BlueMapMini/` if that doesn't exist yet, so your config, themes and icons come across. The old folder is left untouched. The pack is rebuilt as `plugins/BlueMapMini/pack/bluemapmini-pack.zip`; if you host the pack yourself (`public-url`), upload the new file.
-- It still answers to the name BlueMinimap, so HouseRules and anything else that looks for BlueMinimap keeps working without an update. The share event keeps its class, `com.extantape.blueminimap.api.CoordinateShareEvent`.
-- For 0.3.x only, the old names still work: `/blueminimap` and the `blueminimap.*` permissions, alongside BlueMapHUD's. For permissions that are on by default, a "no" on any of the names wins, so a group you'd stopped from sharing stays stopped. Set the `bluemapmini.*` names instead.
-
-## Upgrading from BlueMapHUD
-
-It was called BlueMapHUD up to 0.1.0, and BlueMinimap in 0.2.x. Players keep their HUD settings.
-
-- With the server stopped, swap `BlueMapHUD-0.1.0.jar` for `BlueMinimap-0.2.0.jar`.
-- On first start, `plugins/BlueMapHUD/` is copied to `plugins/BlueMinimap/` if that doesn't exist yet, so your config, themes and icons come across. The old folder is left untouched as a backup; nothing is overwritten. The pack is rebuilt as `plugins/BlueMinimap/pack/blueminimap-pack.zip`. If you host the pack yourself (`public-url`), upload the new file.
-- For 0.2.x only, the old names still work: `/bmhud` (logged at startup), `/bluemaphud:map`, `/bluemaphud:hud` and the `bluemaphud.*` permissions. They go in the next release. For permissions that are on by default, a "no" on either the old or the new name wins, so a group you'd stopped from sharing stays stopped. Any difference between the two names is logged once per player. Set the `blueminimap.*` names instead.
-- If HouseRules is installed, update it to 0.2.0 at the same time. With an older HouseRules, BlueMinimap turns `/hud share` off and logs why, because HouseRules 0.1.x wouldn't see the shares and couldn't keep them inside chat circles.
-- Plugins that listen for shares: the event is now `com.extantape.blueminimap.api.CoordinateShareEvent`, with the same methods.
 
 ## Commands
 
@@ -114,7 +95,7 @@ Up to 8 themes fit in the pack. Every built-in theme passes the same readability
 - **Feedback:** the sender is told exactly who got their coordinates, and who couldn't.
 - **Limits:** a player waits `share.cooldown-seconds` (30 by default) between shares, and each share is logged to the console. `share.enabled: false` turns sharing off.
 
-**Your server's own rules.** BlueMapMini fires `com.extantape.blueminimap.api.CoordinateShareEvent` on the main thread before each share. It carries the sender, the world, the block coordinates and a mutable set of recipients. A plugin can remove recipients, for example to match who may chat with whom, or cancel the share. With `share.candidates: all-online`, recipients can include every player online, so that such a plugin can follow rules that reach across worlds. BlueMapMini only widens a share like that while a plugin is listening to the event, and logs a warning at startup if nothing is. To build against it, depend on BlueMapMini as a server dependency with `join-classpath: true` in your `paper-plugin.yml`.
+**Your server's own rules.** BlueMapMini fires `com.extantape.bluemapmini.api.CoordinateShareEvent` on the main thread before each share. It carries the sender, the world, the block coordinates and a mutable set of recipients. A plugin can remove recipients, for example to match who may chat with whom, or cancel the share. With `share.candidates: all-online`, recipients can include every player online, so that such a plugin can follow rules that reach across worlds. BlueMapMini only widens a share like that while a plugin is listening to the event, and logs a warning at startup if nothing is. To build against it, depend on BlueMapMini as a server dependency with `join-classpath: true` in your `paper-plugin.yml`.
 
 ## Resource packs
 
